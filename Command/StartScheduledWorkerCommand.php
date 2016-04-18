@@ -23,7 +23,7 @@ class StartScheduledWorkerCommand extends ContainerAwareCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $pidFile=$this->getContainer()->get('kernel')->getCacheDir().'/bcc_resque_scheduledworker.pid';
+        $pidFile = $this->getContainer()->get('kernel')->getCacheDir().'/bcc_resque_scheduledworker.pid';
         if (file_exists($pidFile) && !$input->getOption('force')) {
             throw new \Exception('PID file exists - use --force to override');
         }
@@ -34,9 +34,9 @@ class StartScheduledWorkerCommand extends ContainerAwareCommand
 
         $env = array(
             'APP_INCLUDE' => $this->getContainer()->getParameter('kernel.root_dir').'/bootstrap.php.cache',
-            'VVERBOSE'    => 1,
-            'RESQUE_PHP'  => $this->getContainer()->getParameter('bcc_resque.resque.vendor_dir').'/chrisboulton/php-resque/lib/Resque.php',
-            'INTERVAL'    => $input->getOption('interval'),
+            'VVERBOSE' => 1,
+            'RESQUE_PHP' => $this->getContainer()->getParameter('bcc_resque.resque.vendor_dir').'/chrisboulton/php-resque/lib/Resque.php',
+            'INTERVAL' => $input->getOption('interval'),
         );
 
         $prefix = $this->getContainer()->getParameter('bcc_resque.prefix');
@@ -68,22 +68,19 @@ class StartScheduledWorkerCommand extends ContainerAwareCommand
         if (!$input->getOption('foreground')) {
             $logFile = $this->getContainer()->getParameter(
                 'kernel.logs_dir'
-            ) . '/resque-scheduler_' . $this->getContainer()->getParameter('kernel.environment') . '.log';
-            $workerCommand = 'nohup ' . $workerCommand . ' > ' . $logFile .' 2>&1 & echo $!';
+            ).'/resque-scheduler_'.$this->getContainer()->getParameter('kernel.environment').'.log';
+            $workerCommand = 'nohup '.$workerCommand.' > '.$logFile.' 2>&1 & echo $!';
         }
 
-		// In windows: When you pass an environment to CMD it replaces the old environment
-		// That means we create a lot of problems with respect to user accounts and missing vars
-		// this is a workaround where we add the vars to the existing environment.
-		if (defined('PHP_WINDOWS_VERSION_BUILD'))
-		{
-			foreach($env as $key => $value)
-			{
-				putenv($key."=". $value);
-			}
-			$env = null;
-		}
-
+        // In windows: When you pass an environment to CMD it replaces the old environment
+        // That means we create a lot of problems with respect to user accounts and missing vars
+        // this is a workaround where we add the vars to the existing environment.
+        if (defined('PHP_WINDOWS_VERSION_BUILD')) {
+            foreach ($env as $key => $value) {
+                putenv($key.'='.$value);
+            }
+            $env = null;
+        }
 
         $process = new Process($workerCommand, null, $env, null, null);
 
@@ -104,7 +101,7 @@ class StartScheduledWorkerCommand extends ContainerAwareCommand
                 $hostname = php_uname('n');
             }
             $output->writeln(\sprintf('<info>Worker started</info> %s:%s', $hostname, $pid));
-            file_put_contents($pidFile,$pid);
+            file_put_contents($pidFile, $pid);
         }
     }
 }

@@ -39,8 +39,8 @@ class Resque
     public function setRedisConfiguration($host, $port, $database)
     {
         $this->redisConfiguration = array(
-            'host'     => $host,
-            'port'     => $port,
+            'host' => $host,
+            'port' => $port,
             'database' => $database,
         );
         $host = substr($host, 0, 1) == '/' ? $host : $host.':'.$port;
@@ -77,15 +77,15 @@ class Resque
             return new \Resque_Job_Status($result);
         }
 
-        return null;
+        return;
     }
 
     public function enqueueOnce(Job $job, $trackStatus = false)
     {
         $queue = new Queue($job->queue);
-        $jobs  = $queue->getJobs();
+        $jobs = $queue->getJobs();
 
-        foreach ($jobs AS $j) {
+        foreach ($jobs as $j) {
             if ($j->job->payload['class'] == get_class($job)) {
                 if (count(array_intersect($j->args, $job->args)) == count($job->args)) {
                     return ($trackStatus) ? $j->job->payload['id'] : null;
@@ -96,7 +96,7 @@ class Resque
         return $this->enqueue($job, $trackStatus);
     }
 
-    public function enqueueAt($at,Job $job)
+    public function enqueueAt($at, Job $job)
     {
         if ($job instanceof ContainerAwareJob) {
             $job->setKernelOptions($this->kernelOptions);
@@ -106,10 +106,10 @@ class Resque
 
         \ResqueScheduler::enqueueAt($at, $job->queue, \get_class($job), $job->args);
 
-        return null;
+        return;
     }
 
-    public function enqueueIn($in,Job $job)
+    public function enqueueIn($in, Job $job)
     {
         if ($job instanceof ContainerAwareJob) {
             $job->setKernelOptions($this->kernelOptions);
@@ -119,7 +119,7 @@ class Resque
 
         \ResqueScheduler::enqueueIn($in, $job->queue, \get_class($job), $job->args);
 
-        return null;
+        return;
     }
 
     public function removedDelayed(Job $job)
@@ -127,10 +127,10 @@ class Resque
         if ($job instanceof ContainerAwareJob) {
             $job->setKernelOptions($this->kernelOptions);
         }
-        
+
         $this->attachRetryStrategy($job);
 
-        return \ResqueScheduler::removeDelayed($job->queue, \get_class($job),$job->args);
+        return \ResqueScheduler::removeDelayed($job->queue, \get_class($job), $job->args);
     }
 
     public function removeFromTimestamp($at, Job $job)
@@ -138,7 +138,7 @@ class Resque
         if ($job instanceof ContainerAwareJob) {
             $job->setKernelOptions($this->kernelOptions);
         }
-        
+
         $this->attachRetryStrategy($job);
 
         return \ResqueScheduler::removeDelayedJobFromTimestamp($at, $job->queue, \get_class($job), $job->args);
@@ -153,6 +153,7 @@ class Resque
 
     /**
      * @param $queue
+     *
      * @return Queue
      */
     public function getQueue($queue)
@@ -172,7 +173,7 @@ class Resque
         $worker = \Resque_Worker::find($id);
 
         if (!$worker) {
-            return null;
+            return;
         }
 
         return new Worker($worker);
@@ -188,12 +189,12 @@ class Resque
 
     public function getDelayedJobTimestamps()
     {
-        $timestamps= \Resque::redis()->zrange('delayed_queue_schedule', 0, -1);
+        $timestamps = \Resque::redis()->zrange('delayed_queue_schedule', 0, -1);
 
         //TODO: find a more efficient way to do this
-        $out=array();
+        $out = array();
         foreach ($timestamps as $timestamp) {
-            $out[]=array($timestamp,\Resque::redis()->llen('delayed:'.$timestamp));
+            $out[] = array($timestamp, \Resque::redis()->llen('delayed:'.$timestamp));
         }
 
         return $out;
@@ -201,12 +202,12 @@ class Resque
 
     public function getFirstDelayedJobTimestamp()
     {
-        $timestamps=$this->getDelayedJobTimestamps();
-        if (count($timestamps)>0) {
+        $timestamps = $this->getDelayedJobTimestamps();
+        if (count($timestamps) > 0) {
             return $timestamps[0];
         }
 
-        return array(null,0);
+        return array(null, 0);
     }
 
     public function getNumberOfDelayedJobs()
@@ -216,10 +217,10 @@ class Resque
 
     public function getJobsForTimestamp($timestamp)
     {
-        $jobs= \Resque::redis()->lrange('delayed:'.$timestamp,0, -1);
-        $out=array();
+        $jobs = \Resque::redis()->lrange('delayed:'.$timestamp, 0, -1);
+        $out = array();
         foreach ($jobs as $job) {
-            $out[]=json_decode($job, true);
+            $out[] = json_decode($job, true);
         }
 
         return $out;
@@ -227,11 +228,12 @@ class Resque
 
     /**
      * @param $queue
+     *
      * @return int
      */
     public function clearQueue($queue)
     {
-        $length=\Resque::redis()->llen('queue:'.$queue);
+        $length = \Resque::redis()->llen('queue:'.$queue);
         \Resque::redis()->del('queue:'.$queue);
 
         return $length;

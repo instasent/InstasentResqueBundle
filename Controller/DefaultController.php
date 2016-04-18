@@ -9,7 +9,7 @@ class DefaultController extends Controller
     public function indexAction()
     {
         $this->getResque()->pruneDeadWorkers();
-        
+
         return $this->render(
             'BCCResqueBundle:Default:index.html.twig',
             array(
@@ -34,7 +34,7 @@ class DefaultController extends Controller
             array(
                 'queue' => $queue,
                 'jobs' => $jobs,
-                'showingAll' => $showingAll
+                'showingAll' => $showingAll,
             )
         );
     }
@@ -63,7 +63,7 @@ class DefaultController extends Controller
         return $this->render(
             'BCCResqueBundle:Default:scheduled_list.html.twig',
             array(
-                'timestamps' => $this->getResque()->getDelayedJobTimestamps()
+                'timestamps' => $this->getResque()->getDelayedJobTimestamps(),
             )
         );
     }
@@ -81,7 +81,7 @@ class DefaultController extends Controller
             'BCCResqueBundle:Default:scheduled_timestamp.html.twig',
             array(
                 'timestamp' => $timestamp,
-                'jobs' => $jobs
+                'jobs' => $jobs,
             )
         );
     }
@@ -95,7 +95,7 @@ class DefaultController extends Controller
     }
 
     /**
-     * decide which parts of a job queue to show
+     * decide which parts of a job queue to show.
      *
      * @return array
      */

@@ -42,10 +42,10 @@ class StartWorkerCommand extends ContainerAwareCommand
         }
 
         $env['APP_INCLUDE'] = $this->getContainer()->getParameter('kernel.root_dir').'/bootstrap.php.cache';
-        $env['COUNT']       = $input->getOption('count');
-        $env['INTERVAL']    = $input->getOption('interval');
-        $env['QUEUE']       = $input->getArgument('queues');
-        $env['VERBOSE']     = 1;
+        $env['COUNT'] = $input->getOption('count');
+        $env['INTERVAL'] = $input->getOption('interval');
+        $env['QUEUE'] = $input->getArgument('queues');
+        $env['VERBOSE'] = 1;
 
         $prefix = $this->getContainer()->getParameter('bcc_resque.prefix');
         if (!empty($prefix)) {
@@ -60,8 +60,8 @@ class StartWorkerCommand extends ContainerAwareCommand
             unset($env['VERBOSE']);
         }
 
-        $redisHost     = $this->getContainer()->getParameter('bcc_resque.resque.redis.host');
-        $redisPort     = $this->getContainer()->getParameter('bcc_resque.resque.redis.port');
+        $redisHost = $this->getContainer()->getParameter('bcc_resque.resque.redis.host');
+        $redisPort = $this->getContainer()->getParameter('bcc_resque.resque.redis.port');
         $redisDatabase = $this->getContainer()->getParameter('bcc_resque.resque.redis.database');
 
         if ($redisHost != null && $redisPort != null) {
@@ -94,21 +94,20 @@ class StartWorkerCommand extends ContainerAwareCommand
 
         if (!$input->getOption('foreground')) {
             $workerCommand = strtr('nohup %cmd% > %logs_dir%/resque.log 2>&1 & echo $!', array(
-                '%cmd%'      => $workerCommand,
+                '%cmd%' => $workerCommand,
                 '%logs_dir%' => $this->getContainer()->getParameter('kernel.logs_dir'),
             ));
         }
 
-
-		// In windows: When you pass an environment to CMD it replaces the old environment
-		// That means we create a lot of problems with respect to user accounts and missing vars
-		// this is a workaround where we add the vars to the existing environment.
-		if (defined('PHP_WINDOWS_VERSION_BUILD')) {
-			foreach($env as $key => $value) {
-				putenv($key."=". $value);
-			}
-			$env = null;
-		}
+        // In windows: When you pass an environment to CMD it replaces the old environment
+        // That means we create a lot of problems with respect to user accounts and missing vars
+        // this is a workaround where we add the vars to the existing environment.
+        if (defined('PHP_WINDOWS_VERSION_BUILD')) {
+            foreach ($env as $key => $value) {
+                putenv($key.'='.$value);
+            }
+            $env = null;
+        }
 
         $process = new Process($workerCommand, null, $env, null, null);
 

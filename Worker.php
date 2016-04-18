@@ -48,7 +48,7 @@ class Worker
         $job = $this->worker->job();
 
         if (!$job) {
-            return null;
+            return;
         }
 
         return new \DateTime($job['run_at']);
@@ -59,7 +59,7 @@ class Worker
         $job = $this->worker->job();
 
         if (!$job) {
-            return null;
+            return;
         }
 
         $job = new \Resque_Job($job['queue'], $job['payload']);

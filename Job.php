@@ -26,7 +26,6 @@ abstract class Job
 
     public function setUp()
     {
-
     }
 
     public function perform()
@@ -38,6 +37,5 @@ abstract class Job
 
     public function tearDown()
     {
-
     }
 }
