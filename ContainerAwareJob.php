@@ -1,6 +1,6 @@
 <?php
 
-namespace BCC\ResqueBundle;
+namespace Instasent\ResqueBundle;
 
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\HttpKernel\KernelInterface;

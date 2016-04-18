@@ -1,6 +1,6 @@
 <?php
 
-namespace BCC\ResqueBundle\Command;
+namespace Instasent\ResqueBundle\Command;
 
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputArgument;
@@ -12,15 +12,15 @@ class ClearQueueCommand extends ContainerAwareCommand
     protected function configure()
     {
         $this
-            ->setName('bcc:resque:clear-queue')
-            ->setDescription('Clear a BCC queue')
+            ->setName('instasent:resque:clear-queue')
+            ->setDescription('Clear a Instasent queue')
             ->addArgument('queue', InputArgument::REQUIRED, 'Queue name')
         ;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $resque = $this->getContainer()->get('bcc_resque.resque');
+        $resque = $this->getContainer()->get('instasent_resque.resque');
 
         $queue = $input->getArgument('queue');
         $count = $resque->clearQueue($queue);

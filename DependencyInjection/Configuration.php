@@ -1,6 +1,6 @@
 <?php
 
-namespace BCC\ResqueBundle\DependencyInjection;
+namespace Instasent\ResqueBundle\DependencyInjection;
 
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
@@ -18,7 +18,7 @@ class Configuration implements ConfigurationInterface
     public function getConfigTreeBuilder()
     {
         $treeBuilder = new TreeBuilder();
-        $rootNode = $treeBuilder->root('bcc_resque');
+        $rootNode = $treeBuilder->root('instasent_resque');
 
         $rootNode
             ->addDefaultsIfNotSet()
@@ -32,7 +32,7 @@ class Configuration implements ConfigurationInterface
                     ->defaultNull()
                     ->end()
                 ->scalarNode('class')
-                    ->defaultValue('BCC\ResqueBundle\Resque')
+                    ->defaultValue('Instasent\ResqueBundle\Resque')
                     ->cannotBeEmpty()
                     ->info('Set the resque class dir')
                 ->end()

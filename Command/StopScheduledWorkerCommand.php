@@ -1,6 +1,6 @@
 <?php
 
-namespace BCC\ResqueBundle\Command;
+namespace Instasent\ResqueBundle\Command;
 
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
@@ -15,14 +15,14 @@ class StopScheduledWorkerCommand extends ContainerAwareCommand
     protected function configure()
     {
         $this
-            ->setName('bcc:resque:scheduledworker-stop')
-            ->setDescription('Stop a bcc resque scheduled worker')
+            ->setName('instasent:resque:scheduledworker-stop')
+            ->setDescription('Stop a instasent resque scheduled worker')
         ;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $pidFile = $this->getContainer()->get('kernel')->getCacheDir().'/bcc_resque_scheduledworker.pid';
+        $pidFile = $this->getContainer()->get('kernel')->getCacheDir().'/instasent_resque_scheduledworker.pid';
         if (!file_exists($pidFile)) {
             $output->writeln('No PID file found');
 
