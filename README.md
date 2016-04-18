@@ -1,6 +1,8 @@
-# Intro to BCCResqueBundle
+# Intro to InstasentResqueBundle
 
-The BCC resque bundle provides integration of [php-resque](https://github.com/chrisboulton/php-resque/) to Symfony2. It is inspired from resque, a Redis-backed Ruby library for creating background jobs, placing them on multiple queues, and processing them later.
+> This is a fork from https://github.com/michelsalib/InstasentResqueBundle in order to keep its maintenance.
+
+The Instasent resque bundle provides integration of [php-resque](https://github.com/chrisboulton/php-resque/) to Symfony. It is inspired from resque, a Redis-backed Ruby library for creating background jobs, placing them on multiple queues, and processing them later.
 
 ## Features:
 
@@ -20,7 +22,7 @@ TODOs:
 
 ## Screenshots
 ### Dashboard
-![](https://github.com/michelsalib/BCCResqueBundle/raw/master/Resources/screens/home.png)
+![](https://github.com/instasent/InstasentResqueBundle/raw/master/Resources/screens/home.png)
 
 ## Installation and configuration:
 
@@ -36,7 +38,7 @@ Add to your `bcc-resque-bundle` to your dependencies:
 {
     "require": {
         ...
-        "bcc/resque-bundle": "dev-master"
+        "instasent/resque-bundle": "dev-master"
     }
     ...
 }
@@ -44,7 +46,7 @@ Add to your `bcc-resque-bundle` to your dependencies:
 
 To install, run `php composer.phar [update|install]`.
 
-### Add BCCResqueBundle to your application kernel
+### Add InstasentResqueBundle to your application kernel
 
 ``` php
 <?php
@@ -54,7 +56,7 @@ To install, run `php composer.phar [update|install]`.
     {
         return array(
             // ...
-            new BCC\ResqueBundle\BCCResqueBundle(),
+            new Instasent\ResqueBundle\InstasentResqueBundle(),
             // ...
         );
     }
@@ -66,8 +68,8 @@ Add to your `routing.yml`:
 
 ``` yml
 # app/config/routing.yml
-BCCResqueBundle:
-    resource: "@BCCResqueBundle/Resources/config/routing.xml"
+InstasentResqueBundle:
+    resource: "@InstasentResqueBundle/Resources/config/routing.xml"
     prefix:   /resque
 ```
 
@@ -102,7 +104,7 @@ You may want to add some configuration to your `config.yml`
 ``` yml
 # app/config/config.yml
 bcc_resque:
-    class: BCC\ResqueBundle\Resque           # the resque class if different from default
+    class: Instasent\ResqueBundle\Resque           # the resque class if different from default
     vendor_dir: %kernel.root_dir%/../vendor  # the vendor dir if different from default
     prefix: my-resque-prefix                 # optional prefix to separate Resque data per site/app
     redis:
@@ -125,7 +127,7 @@ This bundle is prepared for lazy loading in order to make a connection to redis 
 
 ## Creating a Job
 
-A job is a subclass of the `BCC\ResqueBundle\Job` class. You also can use the `BCC\Resque\ContainerAwareJob` if you need to leverage the container during job execution.
+A job is a subclass of the `Instasent\ResqueBundle\Job` class. You also can use the `Instasent\Resque\ContainerAwareJob` if you need to leverage the container during job execution.
 You will be forced to implement the run method that will contain your job logic:
 
 ``` php
@@ -133,7 +135,7 @@ You will be forced to implement the run method that will contain your job logic:
 
 namespace My;
 
-use BCC\ResqueBundle\Job;
+use Instasent\ResqueBundle\Job;
 
 class MyJob extends Job
 {
@@ -235,13 +237,13 @@ Here's a sample conf file
 
 ```ini
 [program:myapp_phpresque_default]
-command = /usr/bin/php /home/sites/myapp/prod/current/vendor/bcc/resque-bundle/BCC/ResqueBundle/bin/resque
+command = /usr/bin/php /home/sites/myapp/prod/current/vendor/bcc/resque-bundle/Instasent/ResqueBundle/bin/resque
 user = myusername
 environment = APP_INCLUDE='/home/sites/myapp/prod/current/vendor/autoload.php',VERBOSE='1',QUEUE='default'
 stopsignal=QUIT
 
 [program:myapp_phpresque_scheduledworker]
-command = /usr/bin/php /home/sites/myapp/prod/current/vendor/bcc/resque-bundle/BCC/ResqueBundle/bin/resque-scheduler
+command = /usr/bin/php /home/sites/myapp/prod/current/vendor/bcc/resque-bundle/Instasent/ResqueBundle/bin/resque-scheduler
 user = myusername
 environment = APP_INCLUDE='/home/sites/myapp/prod/current/vendor/autoload.php',VERBOSE='1',RESQUE_PHP='/home/sites/myapp/prod/current/vendor/chrisboulton/php-resque/lib/Resque.php'
 stopsignal=QUIT
@@ -269,7 +271,7 @@ From within the job:
 
 namespace My;
 
-use BCC\ResqueBundle\Job;
+use Instasent\ResqueBundle\Job;
 
 class MyJob extends Job
 {
@@ -304,7 +306,7 @@ Just extend the `ContainerAwareJob`:
 
 namespace My;
 
-use BCC\ResqueBundle\ContainerAwareJob;
+use Instasent\ResqueBundle\ContainerAwareJob;
 
 class MyJob extends ContainerAwareJob
 {
@@ -355,7 +357,7 @@ With default strategy for all but specific jobs:
 ```yml
 bcc_resque:
     auto_retry:
-    	default:        [0, 10, 60]
+      default:        [0, 10, 60]
         Some\Job:       [0, 10, 120, 240]
         Some\Other\Job: [10, 30, 120, 600]
 ```
@@ -367,7 +369,7 @@ You can disable `auto_retry` for selected jobs by using an empty array:
 ```yml
 bcc_resque:
     auto_retry:
-    	default:        [0, 10, 60]
+      default:        [0, 10, 60]
         Some\Job:       []
         Some\Other\Job: [10, 30, 120, 600]
 ```

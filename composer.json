@@ -1,11 +1,15 @@
 {
-    "name": "bcc/resque-bundle",
+    "name": "instasent/resque-bundle",
     "type": "symfony-bundle",
-    "description": "BCCResqueBundle",
+    "description": "InstasentResqueBundle",
     "keywords": ["resque job queue management"],
-    "homepage": "http://github.com/michelsalib/BCCResqueBundle",
+    "homepage": "http://github.com/instasent/InstasentResqueBundle",
     "license": "MIT",
     "authors": [
+        {
+            "name": "Luis Hdez",
+            "email": "luis.munoz.hdez@gmail.com"
+        },
         {
             "name": "Michel Salib",
             "email": "michelsalib@hotmail.com",
@@ -13,12 +17,12 @@
         }
     ],
     "require": {
-        "symfony/framework-bundle": ">=2.0,<3.0",
+        "symfony/framework-bundle": ">=2.0",
         "chrisboulton/php-resque": "dev-master",
         "chrisboulton/php-resque-scheduler": "dev-master"
     },
     "autoload": {
-        "psr-0": { "BCC\\ResqueBundle": "" }
+        "psr-0": { "Instasent\\ResqueBundle": "" }
     },
-    "target-dir": "BCC/ResqueBundle"
+    "target-dir": "Instasent/ResqueBundle"
 }
