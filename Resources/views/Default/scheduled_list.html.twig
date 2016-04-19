@@ -1,6 +1,6 @@
-{% extends 'BCCResqueBundle::layout.html.twig' %}
+{% extends 'InstasentResqueBundle::layout.html.twig' %}
 {% block body %}
-{% include "BCCResqueBundle:Default:_menu.html.twig" with {activeNav: 'scheduled_list'} %}
+{% include "InstasentResqueBundle:Default:_menu.html.twig" with {activeNav: 'scheduled_list'} %}
 <div class="container">
     <div class="row span3">
         <h2>Scheduled Jobs</h2>
@@ -15,7 +15,7 @@
             {% for timestamp in timestamps %}
                 <tr>
                     <th class="span2">
-                        <a href="{{ path('BCCResqueBundle_scheduled_timestamp', {timestamp: timestamp[0]}) }}">
+                        <a href="{{ path('InstasentResqueBundle_scheduled_timestamp', {timestamp: timestamp[0]}) }}">
                             {{ timestamp[0]|date('Y-m-d H:i:s') }}</a>
                     </th>
                     <td class="span1">{{ timestamp[1] }}</td>
