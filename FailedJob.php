@@ -42,6 +42,11 @@ class FailedJob
         return $this->data['worker'];
     }
 
+    public function getArgs()
+    {
+        return $this->data['payload']['args'];
+    }
+
     public function getExceptionClass()
     {
         return $this->data['exception'];
