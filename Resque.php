@@ -152,6 +152,49 @@ class Resque
     }
 
     /**
+     * Returns an array of queues with its current load
+     *
+     * @return array
+     */
+    public function getQueuesLoad($pattern = null)
+    {
+        $queues = [];
+
+        foreach (\Resque::queues() as $queue) {
+            $queues[$queue] = \Resque::size($queue);
+        }
+
+        return $queues;
+    }
+
+    /**
+     * @param $queueKey
+     * @param $parallelQueues
+     *
+     * @return array of queues with its loads
+    */
+    public function getParallelQueueLoads($queueKey, $parallelQueues)
+    {
+        for ($i=1; $i <= $parallelQueues; $i++) {
+            $queues[$queueKey.'-'.$i] = \Resque::size($queueKey.'-'.$i);
+        }
+
+        return $queues;
+    }
+
+    /**
+     * @return string The queue name with less job load
+    */
+    public function getLessLoadedParallelQueue($queueKey, $parallelQueues)
+    {
+        $queues = $this->getParallelQueueLoads($queueKey, $parallelQueues);
+        asort($queues);
+        $lessLoadedQueue = array_slice($queues, 0, 1);
+
+        return key($lessLoadedQueue);
+    }
+
+    /**
      * @param $queue
      *
      * @return Queue
