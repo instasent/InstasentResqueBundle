@@ -18,6 +18,10 @@ abstract class ContainerAwareJob extends Job
      */
     protected function getContainer()
     {
+        if ($GLOBALS['KERNEL'] != null) {
+            $this->kernel = $GLOBALS['KERNEL'];
+        }
+
         if ($this->kernel === null) {
             $this->kernel = $this->createKernel();
             $this->kernel->boot();
@@ -52,6 +56,10 @@ abstract class ContainerAwareJob extends Job
 
     public function tearDown()
     {
+        if ($GLOBALS['KERNEL'] != null) {
+            return;
+        }
+
         if ($this->kernel) {
             $this->kernel->shutdown();
         }
