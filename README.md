@@ -184,6 +184,10 @@ By default `VERBOSE` environment variable is set when calling php-resque
 
 See php-resque logging option : https://github.com/chrisboulton/php-resque#logging
 
+## Running a worker without forking
+
+Sometimes intensive tasks may lose performance with forking mode. We have added a bin/resque-single binary, you can pass kernel file to be loaded only once at start. Be carefull cause if this Worker fails, then you need to restart manually this worker. We recommend to use supervisor to control this, and superlance with memory plugin to restart worker when hits some memory treshold.
+
 ## Adding a delayed job to a queue
 
 You can specify that a job is run at a specific time or after a specific delay (in seconds).
@@ -240,6 +244,12 @@ Here's a sample conf file
 command = /usr/bin/php /home/sites/myapp/prod/current/vendor/instasent/resque-bundle/Instasent/ResqueBundle/bin/resque
 user = myusername
 environment = APP_INCLUDE='/home/sites/myapp/prod/current/vendor/autoload.php',VERBOSE='1',QUEUE='default'
+stopsignal=QUIT
+
+[program:myapp_phpresque_default_single_worker]
+command = /usr/bin/php /home/sites/myapp/prod/current/vendor/instasent/resque-bundle/Instasent/ResqueBundle/bin/resque-single
+user = myusername
+environment = APP_KERNEL='/home/sites/myapp/prod/current/app/AppKernel.php',APP_INCLUDE='/home/sites/myapp/prod/current/vendor/autoload.php',VERBOSE='1',QUEUE='default'
 stopsignal=QUIT
 
 [program:myapp_phpresque_scheduledworker]
