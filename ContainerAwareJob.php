@@ -18,7 +18,7 @@ abstract class ContainerAwareJob extends Job
      */
     protected function getContainer()
     {
-        if ($GLOBALS['KERNEL'] != null) {
+        if (isset($GLOBALS['KERNEL']) && $GLOBALS['KERNEL'] != null) {
             $this->kernel = $GLOBALS['KERNEL'];
         }
 
@@ -56,7 +56,7 @@ abstract class ContainerAwareJob extends Job
 
     public function tearDown()
     {
-        if ($GLOBALS['KERNEL'] != null) {
+        if (isset($GLOBALS['KERNEL']) && $GLOBALS['KERNEL'] != null) {
             return;
         }
 
