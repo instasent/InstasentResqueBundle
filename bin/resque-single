@@ -113,7 +113,7 @@ Resque_Event::listen('onFailure', function(Exception $exception, Resque_Job $job
 
     // Start a single worker
     $queues = explode(',', $QUEUE);
-    $worker = new Resque_Worker_Single($queues);
+    $worker = new \Instasent\ResqueBundle\WorkerSingle($queues);
     $worker->setLogger($logger);
 
     $PIDFILE = getenv('PIDFILE');
