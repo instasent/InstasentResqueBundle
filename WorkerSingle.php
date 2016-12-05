@@ -1,5 +1,11 @@
 <?php
+
+namespace Instasent\ResqueBundle;
+
 declare(ticks = 1);
+
+use Psr\Log\LoggerInterface;
+use Psr\Log\LogLevel;
 
 /**
  * Resque worker that handles checking queues for jobs, fetching them
@@ -42,7 +48,7 @@ class WorkerSingle
 	private $id;
 
 	/**
-	 * @var Resque_Job Current job, if any, being processed by this worker.
+	 * @var \Resque_Job Current job, if any, being processed by this worker.
 	 */
 	private $currentJob = null;
 
@@ -64,7 +70,7 @@ class WorkerSingle
      */
     public function __construct($queues)
     {
-        $this->logger = new Resque_Log();
+        $this->logger = new \Resque_Log();
 
         if(!is_array($queues)) {
             $queues = array($queues);
@@ -82,7 +88,7 @@ class WorkerSingle
 	 */
 	public static function all()
 	{
-		$workers = Resque::redis()->smembers('workers');
+		$workers = \Resque::redis()->smembers('workers');
 		if(!is_array($workers)) {
 			$workers = array();
 		}
@@ -102,14 +108,14 @@ class WorkerSingle
 	 */
 	public static function exists($workerId)
 	{
-		return (bool)Resque::redis()->sismember('workers', $workerId);
+		return (bool)\Resque::redis()->sismember('workers', $workerId);
 	}
 
 	/**
 	 * Given a worker ID, find it and return an instantiated worker class for it.
 	 *
 	 * @param string $workerId The ID of the worker.
-	 * @return Resque_Worker Instance of the worker. False if the worker does not exist.
+	 * @return \Resque_Worker Instance of the worker. False if the worker does not exist.
 	 */
 	public static function find($workerId)
 	{
@@ -142,7 +148,7 @@ class WorkerSingle
 	 *
 	 * @param int $interval How often to check for new jobs across the queues.
 	 */
-	public function work($interval = Resque::DEFAULT_INTERVAL, $blocking = false)
+	public function work($interval = \Resque::DEFAULT_INTERVAL, $blocking = false)
 	{
 		$this->updateProcLine('Starting');
 		$this->startup();
@@ -156,7 +162,7 @@ class WorkerSingle
 			$job = false;
 			if(!$this->paused) {
 				if($blocking === true) {
-					$this->logger->log(Psr\Log\LogLevel::INFO, 'Starting blocking with timeout of {interval}', array('interval' => $interval));
+					$this->logger->log(LogLevel::INFO, 'Starting blocking with timeout of {interval}', array('interval' => $interval));
 					$this->updateProcLine('Waiting for ' . implode(',', $this->queues) . ' with blocking timeout ' . $interval);
 				} else {
 					$this->updateProcLine('Waiting for ' . implode(',', $this->queues) . ' with interval ' . $interval);
@@ -174,7 +180,7 @@ class WorkerSingle
 				if($blocking === false)
 				{
 					// If no job was found, we sleep for $interval before continuing and checking again
-					$this->logger->log(Psr\Log\LogLevel::INFO, 'Sleeping for {interval}', array('interval' => $interval));
+					$this->logger->log(LogLevel::INFO, 'Sleeping for {interval}', array('interval' => $interval));
 					if($this->paused) {
 						$this->updateProcLine('Paused');
 					}
@@ -188,7 +194,7 @@ class WorkerSingle
 				continue;
 			}
 
-			$this->logger->log(Psr\Log\LogLevel::NOTICE, 'Starting work on {job}', array('job' => $job));
+			$this->logger->log(LogLevel::NOTICE, 'Starting work on {job}', array('job' => $job));
 			$this->workingOn($job);
 
             $this->perform($job);
@@ -202,28 +208,28 @@ class WorkerSingle
 	/**
 	 * Process a single job.
 	 *
-	 * @param Resque_Job $job The job to be processed.
+	 * @param \Resque_Job $job The job to be processed.
 	 */
-	public function perform(Resque_Job $job)
+	public function perform(\Resque_Job $job)
 	{
 		try {
-			Resque_Event::trigger('afterFork', $job);
+			\Resque_Event::trigger('afterFork', $job);
 			$job->perform();
 		}
-		catch(Exception $e) {
-			$this->logger->log(Psr\Log\LogLevel::CRITICAL, '{job} has failed {stack}', array('job' => $job, 'stack' => $e));
+		catch(\Exception $e) {
+			$this->logger->log(LogLevel::CRITICAL, '{job} has failed {stack}', array('job' => $job, 'stack' => $e));
 			$job->fail($e);
 			return;
 		}
 
-		$job->updateStatus(Resque_Job_Status::STATUS_COMPLETE);
-		$this->logger->log(Psr\Log\LogLevel::NOTICE, '{job} has finished', array('job' => $job));
+		$job->updateStatus(\Resque_Job_Status::STATUS_COMPLETE);
+		$this->logger->log(LogLevel::NOTICE, '{job} has finished', array('job' => $job));
 	}
 
 	/**
 	 * @param  bool            $blocking
 	 * @param  int             $timeout
-	 * @return object|boolean               Instance of Resque_Job if a job is found, false if not.
+	 * @return object|boolean               Instance of \Resque_Job if a job is found, false if not.
 	 */
 	public function reserve($blocking = false, $timeout = null)
 	{
@@ -233,17 +239,17 @@ class WorkerSingle
 		}
 
 		if($blocking === true) {
-			$job = Resque_Job::reserveBlocking($queues, $timeout);
+			$job = \Resque_Job::reserveBlocking($queues, $timeout);
 			if($job) {
-				$this->logger->log(Psr\Log\LogLevel::INFO, 'Found job on {queue}', array('queue' => $job->queue));
+				$this->logger->log(LogLevel::INFO, 'Found job on {queue}', array('queue' => $job->queue));
 				return $job;
 			}
 		} else {
 			foreach($queues as $queue) {
-				$this->logger->log(Psr\Log\LogLevel::INFO, 'Checking {queue} for jobs', array('queue' => $queue));
-				$job = Resque_Job::reserve($queue);
+				$this->logger->log(LogLevel::INFO, 'Checking {queue} for jobs', array('queue' => $queue));
+				$job = \Resque_Job::reserve($queue);
 				if($job) {
-					$this->logger->log(Psr\Log\LogLevel::INFO, 'Found job on {queue}', array('queue' => $job->queue));
+					$this->logger->log(LogLevel::INFO, 'Found job on {queue}', array('queue' => $job->queue));
 					return $job;
 				}
 			}
@@ -269,7 +275,7 @@ class WorkerSingle
 			return $this->queues;
 		}
 
-		$queues = Resque::queues();
+		$queues = \Resque::queues();
 		sort($queues);
 		return $queues;
 	}
@@ -281,7 +287,7 @@ class WorkerSingle
 	{
 		$this->registerSigHandlers();
 		$this->pruneDeadWorkers();
-		Resque_Event::trigger('beforeFirstFork', $this);
+		\Resque_Event::trigger('beforeFirstFork', $this);
 		$this->registerWorker();
 	}
 
@@ -294,7 +300,7 @@ class WorkerSingle
 	 */
 	private function updateProcLine($status)
 	{
-		$processTitle = 'resque-' . Resque::VERSION . ': ' . $status;
+		$processTitle = 'resque-' . \Resque::VERSION . ': ' . $status;
 		if(function_exists('cli_set_process_title') && PHP_OS !== 'Darwin') {
 			cli_set_process_title($processTitle);
 		}
@@ -323,7 +329,7 @@ class WorkerSingle
 		pcntl_signal(SIGUSR1, array($this, 'killChild'));
 		pcntl_signal(SIGUSR2, array($this, 'pauseProcessing'));
 		pcntl_signal(SIGCONT, array($this, 'unPauseProcessing'));
-		$this->logger->log(Psr\Log\LogLevel::DEBUG, 'Registered signals');
+		$this->logger->log(LogLevel::DEBUG, 'Registered signals');
 	}
 
 	/**
@@ -331,7 +337,7 @@ class WorkerSingle
 	 */
 	public function pauseProcessing()
 	{
-		$this->logger->log(Psr\Log\LogLevel::NOTICE, 'USR2 received; pausing job processing');
+		$this->logger->log(LogLevel::NOTICE, 'USR2 received; pausing job processing');
 		$this->paused = true;
 	}
 
@@ -341,7 +347,7 @@ class WorkerSingle
 	 */
 	public function unPauseProcessing()
 	{
-		$this->logger->log(Psr\Log\LogLevel::NOTICE, 'CONT received; resuming job processing');
+		$this->logger->log(LogLevel::NOTICE, 'CONT received; resuming job processing');
 		$this->paused = false;
 	}
 
@@ -352,7 +358,7 @@ class WorkerSingle
 	public function shutdown()
 	{
 		$this->shutdown = true;
-		$this->logger->log(Psr\Log\LogLevel::NOTICE, 'Shutting down');
+		$this->logger->log(LogLevel::NOTICE, 'Shutting down');
 	}
 
 	/**
@@ -372,18 +378,18 @@ class WorkerSingle
 	public function killChild()
 	{
 		if(!$this->child) {
-			$this->logger->log(Psr\Log\LogLevel::DEBUG, 'No child to kill.');
+			$this->logger->log(LogLevel::DEBUG, 'No child to kill.');
 			return;
 		}
 
-		$this->logger->log(Psr\Log\LogLevel::INFO, 'Killing child at {child}', array('child' => $this->child));
+		$this->logger->log(LogLevel::INFO, 'Killing child at {child}', array('child' => $this->child));
 		if(exec('ps -o pid,state -p ' . $this->child, $output, $returnCode) && $returnCode != 1) {
-			$this->logger->log(Psr\Log\LogLevel::DEBUG, 'Child {child} found, killing.', array('child' => $this->child));
+			$this->logger->log(LogLevel::DEBUG, 'Child {child} found, killing.', array('child' => $this->child));
 			posix_kill($this->child, SIGKILL);
 			$this->child = null;
 		}
 		else {
-			$this->logger->log(Psr\Log\LogLevel::INFO, 'Child {child} not found, restarting.', array('child' => $this->child));
+			$this->logger->log(LogLevel::INFO, 'Child {child} not found, restarting.', array('child' => $this->child));
 			$this->shutdown();
 		}
 	}
@@ -406,7 +412,7 @@ class WorkerSingle
 				if($host != $this->hostname || in_array($pid, $workerPids) || $pid == getmypid()) {
 					continue;
 				}
-				$this->logger->log(Psr\Log\LogLevel::INFO, 'Pruning dead worker: {worker}', array('worker' => (string)$worker));
+				$this->logger->log(LogLevel::INFO, 'Pruning dead worker: {worker}', array('worker' => (string)$worker));
 				$worker->unregisterWorker();
 			}
 		}
@@ -433,8 +439,8 @@ class WorkerSingle
 	 */
 	public function registerWorker()
 	{
-		Resque::redis()->sadd('workers', (string)$this);
-		Resque::redis()->set('worker:' . (string)$this . ':started', strftime('%a %b %d %H:%M:%S %Z %Y'));
+		\Resque::redis()->sadd('workers', (string)$this);
+		\Resque::redis()->set('worker:' . (string)$this . ':started', strftime('%a %b %d %H:%M:%S %Z %Y'));
 	}
 
 	/**
@@ -443,33 +449,33 @@ class WorkerSingle
 	public function unregisterWorker()
 	{
 		if(is_object($this->currentJob)) {
-			$this->currentJob->fail(new Resque_Job_DirtyExitException);
+			$this->currentJob->fail(new \Resque_Job_DirtyExitException);
 		}
 
 		$id = (string)$this;
-		Resque::redis()->srem('workers', $id);
-		Resque::redis()->del('worker:' . $id);
-		Resque::redis()->del('worker:' . $id . ':started');
-		Resque_Stat::clear('processed:' . $id);
-		Resque_Stat::clear('failed:' . $id);
+		\Resque::redis()->srem('workers', $id);
+		\Resque::redis()->del('worker:' . $id);
+		\Resque::redis()->del('worker:' . $id . ':started');
+		\Resque_Stat::clear('processed:' . $id);
+		\Resque_Stat::clear('failed:' . $id);
 	}
 
 	/**
 	 * Tell Redis which job we're currently working on.
 	 *
-	 * @param object $job Resque_Job instance containing the job we're working on.
+	 * @param object $job \Resque_Job instance containing the job we're working on.
 	 */
-	public function workingOn(Resque_Job $job)
+	public function workingOn(\Resque_Job $job)
 	{
 		$job->worker = $this;
 		$this->currentJob = $job;
-		$job->updateStatus(Resque_Job_Status::STATUS_RUNNING);
+		$job->updateStatus(\Resque_Job_Status::STATUS_RUNNING);
 		$data = json_encode(array(
 			'queue' => $job->queue,
 			'run_at' => strftime('%a %b %d %H:%M:%S %Z %Y'),
 			'payload' => $job->payload
 		));
-		Resque::redis()->set('worker:' . $job->worker, $data);
+		\Resque::redis()->set('worker:' . $job->worker, $data);
 	}
 
 	/**
@@ -479,9 +485,9 @@ class WorkerSingle
 	public function doneWorking()
 	{
 		$this->currentJob = null;
-		Resque_Stat::incr('processed');
-		Resque_Stat::incr('processed:' . (string)$this);
-		Resque::redis()->del('worker:' . (string)$this);
+		\Resque_Stat::incr('processed');
+		\Resque_Stat::incr('processed:' . (string)$this);
+		\Resque::redis()->del('worker:' . (string)$this);
 	}
 
 	/**
@@ -501,7 +507,7 @@ class WorkerSingle
 	 */
 	public function job()
 	{
-		$job = Resque::redis()->get('worker:' . $this);
+		$job = \Resque::redis()->get('worker:' . $this);
 		if(!$job) {
 			return array();
 		}
@@ -518,15 +524,15 @@ class WorkerSingle
 	 */
 	public function getStat($stat)
 	{
-		return Resque_Stat::get($stat . ':' . $this);
+		return \Resque_Stat::get($stat . ':' . $this);
 	}
 
 	/**
 	 * Inject the logging object into the worker
 	 *
-	 * @param Psr\Log\LoggerInterface $logger
+	 * @param LoggerInterface $logger
 	 */
-	public function setLogger(Psr\Log\LoggerInterface $logger)
+	public function setLogger(LoggerInterface $logger)
 	{
 		$this->logger = $logger;
 	}
