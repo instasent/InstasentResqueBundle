@@ -70,6 +70,10 @@ if (getenv('APP_KERNEL')) {
     $KERNEL = $kernel;
 }
 
+if (getenv('LOG_CHANNEL')) {
+    $logger = $KERNEL->getContainer()->get(getenv('LOG_CHANNEL'));
+}
+
 $PREFIX = getenv('PREFIX');
 if (!empty($PREFIX)) {
     $logger->log(Psr\Log\LogLevel::INFO, 'Prefix set to {prefix}', array('prefix' => $PREFIX));

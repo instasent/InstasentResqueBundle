@@ -57,6 +57,18 @@ if (!empty($COUNT) && $COUNT > 1) {
     $count = $COUNT;
 }
 
+if (getenv('LOG_CHANNEL') && getenv('APP_KERNEL')) {
+    $file = new SplFileInfo(getenv('APP_KERNEL'));
+    $class = $file->getBasename('.php');
+
+    require $file;
+
+    $kernel = new $class(getenv('SYMFONY_ENV'), false);
+    $kernel->boot();
+
+    $logger = $kernel->getContainer()->get(getenv('LOG_CHANNEL'));
+}
+
 $PREFIX = getenv('PREFIX');
 if (!empty($PREFIX)) {
     $logger->log(Psr\Log\LogLevel::INFO, 'Prefix set to {prefix}', array('prefix' => $PREFIX));

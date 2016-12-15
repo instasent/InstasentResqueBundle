@@ -184,9 +184,13 @@ By default `VERBOSE` environment variable is set when calling php-resque
 
 See php-resque logging option : https://github.com/chrisboulton/php-resque#logging
 
+## Use monolog from your kernel
+
+You can pass a monolog channel to write your logs, see example in supervisor config. Note: Pass Kernel ENV to resque is to instanciate logger, no for sharing kernel between jobs.
+
 ## Running a worker without forking
 
-Sometimes intensive tasks may lose performance with forking mode. We have added a bin/resque-single binary, you can pass kernel file to be loaded only once at start. Be carefull cause if this Worker fails, then you need to restart manually this worker. We recommend to use supervisor to control this, and superlance with memory plugin to restart worker when hits some memory treshold.
+Sometimes intensive tasks may lose performance with forking mode. We have added a bin/resque-single binary, you can pass kernel file to be loaded only once at start. Be carefull cause if this Worker fails, then you need to restart manually this worker. We recommend to use supervisor to control this, and superlance with memory plugin to restart worker when hits some memory treshold. Be careful too with your code, shared variables, services instances... etc.
 
 ## Adding a delayed job to a queue
 
@@ -256,6 +260,12 @@ stopsignal=QUIT
 command = /usr/bin/php /home/sites/myapp/prod/current/vendor/instasent/resque-bundle/Instasent/ResqueBundle/bin/resque-scheduler
 user = myusername
 environment = APP_INCLUDE='/home/sites/myapp/prod/current/vendor/autoload.php',VERBOSE='1',RESQUE_PHP='/home/sites/myapp/prod/current/vendor/chrisboulton/php-resque/lib/Resque.php'
+stopsignal=QUIT
+
+[program:myapp_phpresque_default_single_worker_logger]
+command = /usr/bin/php /home/sites/myapp/prod/current/vendor/instasent/resque-bundle/Instasent/ResqueBundle/bin/resque-single
+user = myusername
+environment = APP_KERNEL='/home/sites/myapp/prod/current/app/AppKernel.php',LOG_CHANNEL='monolog.logger.custom',APP_INCLUDE='/home/sites/myapp/prod/current/vendor/autoload.php',VERBOSE='1',QUEUE='default'
 stopsignal=QUIT
 
 [group:myapp]
