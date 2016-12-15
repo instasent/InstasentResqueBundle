@@ -57,20 +57,16 @@ if (!empty($COUNT) && $COUNT > 1) {
     $count = $COUNT;
 }
 
-if (getenv('LOG_CHANNEL')) {
-    $KERNEL_LOG = null;
-    if (getenv('APP_KERNEL')) {
-        $file = new SplFileInfo(getenv('APP_KERNEL'));
-        $class = $file->getBasename('.php');
+if (getenv('LOG_CHANNEL') && getenv('APP_KERNEL')) {
+    $file = new SplFileInfo(getenv('APP_KERNEL'));
+    $class = $file->getBasename('.php');
 
-        require $file;
+    require $file;
 
-        $kernel = new $class(getenv('SYMFONY_ENV'), false);
-        $kernel->boot();
-        $KERNEL_LOG = $kernel;
+    $kernel = new $class(getenv('SYMFONY_ENV'), false);
+    $kernel->boot();
 
-        $logger = $KERNEL_LOG->getContainer()->get(getenv('LOG_CHANNEL'));
-    }
+    $logger = $kernel->getContainer()->get(getenv('LOG_CHANNEL'));
 }
 
 $PREFIX = getenv('PREFIX');
