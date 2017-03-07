@@ -41,7 +41,13 @@ class StartWorkerCommand extends ContainerAwareCommand
             );
         }
 
-        $env['APP_INCLUDE'] = $this->getContainer()->getParameter('kernel.root_dir').'/bootstrap.php.cache';
+        //Add compatibility with Symfony 2/3
+        if (file_exists($this->getContainer()->getParameter('kernel.root_dir').'/bootstrap.php.cache')) {
+            $env['APP_INCLUDE'] = $this->getContainer()->getParameter('kernel.root_dir') . '/bootstrap.php.cache';
+        } else {
+            $env['APP_INCLUDE'] = $this->getContainer()->getParameter('kernel.root_dir') . '/../var/bootstrap.php.cache';
+        }
+        
         $env['COUNT'] = $input->getOption('count');
         $env['INTERVAL'] = $input->getOption('interval');
         $env['QUEUE'] = $input->getArgument('queues');
