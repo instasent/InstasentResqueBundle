@@ -32,8 +32,15 @@ class StartScheduledWorkerCommand extends ContainerAwareCommand
             unlink($pidFile);
         }
 
+        //Add compatibility with Symfony 2/3
+        if (file_exists($this->getContainer()->getParameter('kernel.root_dir').'/bootstrap.php.cache')) {
+            $APP_INCLUDE = $this->getContainer()->getParameter('kernel.root_dir') . '/bootstrap.php.cache';
+        } else {
+            $APP_INCLUDE = $this->getContainer()->getParameter('kernel.root_dir') . '/../var/bootstrap.php.cache';
+        }
+        
         $env = array(
-            'APP_INCLUDE' => $this->getContainer()->getParameter('kernel.root_dir').'/bootstrap.php.cache',
+            'APP_INCLUDE' => $APP_INCLUDE,
             'VVERBOSE' => 1,
             'RESQUE_PHP' => $this->getContainer()->getParameter('instasent_resque.resque.vendor_dir').'/chrisboulton/php-resque/lib/Resque.php',
             'INTERVAL' => $input->getOption('interval'),
