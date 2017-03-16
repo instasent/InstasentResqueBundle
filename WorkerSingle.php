@@ -216,6 +216,12 @@ class WorkerSingle
 			\Resque_Event::trigger('afterFork', $job);
 			$job->perform();
 		}
+		catch (\Error $e)
+        	{
+            		$this->logger->log(LogLevel::CRITICAL, '{job} has failed {stack}', array('job' => $job, 'stack' => $e));
+            		$job->fail($e);
+            		return;
+        	}
 		catch(\Exception $e) {
 			$this->logger->log(LogLevel::CRITICAL, '{job} has failed {stack}', array('job' => $job, 'stack' => $e));
 			$job->fail($e);
