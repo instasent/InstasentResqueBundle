@@ -15,7 +15,7 @@ use Psr\Log\LogLevel;
  * @author		Chris Boulton <chris@bigcommerce.com>
  * @license		http://www.opensource.org/licenses/mit-license.php
  */
-class WorkerSingle
+class WorkerSingle extends \Resque_Worker
 {
 	/**
 	* @var LoggerInterface Logging object that impliments the PSR-3 LoggerInterface
@@ -215,13 +215,19 @@ class WorkerSingle
 		try {
 			\Resque_Event::trigger('afterFork', $job);
 			$job->perform();
-		}
-		catch (\Error $e) {
-            		$this->logger->log(LogLevel::CRITICAL, '{job} has failed {stack}', array('job' => $job, 'stack' => $e));
-            		$job->fail($e);
-            		return;
-        }
-		catch(\Exception $e) {
+		} catch (\Error $e) {
+		    $exception = new \ErrorException(
+		        $e->getMessage(),
+                $e->getCode(),
+                1,
+                $e->getFile(),
+                $e->getLine()
+            );
+
+            $this->logger->log(LogLevel::CRITICAL, '{job} has failed {stack}', array('job' => $job, 'stack' => $exception));
+            $job->fail($exception);
+            return;
+        } catch(\Exception $e) {
 			$this->logger->log(LogLevel::CRITICAL, '{job} has failed {stack}', array('job' => $job, 'stack' => $e));
 			$job->fail($e);
 			return;
