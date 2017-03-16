@@ -7,6 +7,10 @@
     "license": "MIT",
     "authors": [
         {
+            "name": "Marcos Gomez",
+            "email": "marcos@instasent.com"
+        },
+        {
             "name": "Luis Hdez",
             "email": "luis.munoz.hdez@gmail.com"
         },
