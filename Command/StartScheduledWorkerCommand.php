@@ -3,10 +3,10 @@
 namespace Instasent\ResqueBundle\Command;
 
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
-use Symfony\Component\Process\Process;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Process\Process;
 
 class StartScheduledWorkerCommand extends ContainerAwareCommand
 {
@@ -17,8 +17,7 @@ class StartScheduledWorkerCommand extends ContainerAwareCommand
             ->setDescription('Start a instasent scheduled resque worker')
             ->addOption('foreground', 'f', InputOption::VALUE_NONE, 'Should the worker run in foreground')
             ->addOption('force', null, InputOption::VALUE_NONE, 'Force creation of a new worker if the PID file exists')
-            ->addOption('interval', 'i', InputOption::VALUE_REQUIRED, 'How often to check for new jobs across the queues', 5)
-        ;
+            ->addOption('interval', 'i', InputOption::VALUE_REQUIRED, 'How often to check for new jobs across the queues', 5);
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -34,17 +33,17 @@ class StartScheduledWorkerCommand extends ContainerAwareCommand
 
         //Add compatibility with Symfony 2/3
         if (file_exists($this->getContainer()->getParameter('kernel.root_dir').'/bootstrap.php.cache')) {
-            $APP_INCLUDE = $this->getContainer()->getParameter('kernel.root_dir') . '/bootstrap.php.cache';
+            $APP_INCLUDE = $this->getContainer()->getParameter('kernel.root_dir').'/bootstrap.php.cache';
         } else {
-            $APP_INCLUDE = $this->getContainer()->getParameter('kernel.root_dir') . '/../var/bootstrap.php.cache';
+            $APP_INCLUDE = $this->getContainer()->getParameter('kernel.root_dir').'/../var/bootstrap.php.cache';
         }
-        
-        $env = array(
+
+        $env = [
             'APP_INCLUDE' => $APP_INCLUDE,
-            'VVERBOSE' => 1,
-            'RESQUE_PHP' => $this->getContainer()->getParameter('instasent_resque.resque.vendor_dir').'/chrisboulton/php-resque/lib/Resque.php',
-            'INTERVAL' => $input->getOption('interval'),
-        );
+            'VVERBOSE'    => 1,
+            'RESQUE_PHP'  => $this->getContainer()->getParameter('instasent_resque.resque.vendor_dir').'/chrisboulton/php-resque/lib/Resque.php',
+            'INTERVAL'    => $input->getOption('interval'),
+        ];
 
         $prefix = $this->getContainer()->getParameter('instasent_resque.prefix');
         if (!empty($prefix)) {
@@ -95,8 +94,8 @@ class StartScheduledWorkerCommand extends ContainerAwareCommand
 
         if ($input->getOption('foreground')) {
             $process->run(function ($type, $buffer) use ($output) {
-                    $output->write($buffer);
-                });
+                $output->write($buffer);
+            });
         }
         // else we recompose and display the worker id
         else {

@@ -17,7 +17,7 @@ abstract class Job
     /**
      * @var array The job args
      */
-    public $args = array();
+    public $args = [];
 
     public function getName()
     {

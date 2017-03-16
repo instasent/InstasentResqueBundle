@@ -16,8 +16,7 @@ class StopWorkerCommand extends ContainerAwareCommand
             ->setName('instasent:resque:worker-stop')
             ->setDescription('Stop a instasent resque worker')
             ->addArgument('id', InputArgument::OPTIONAL, 'Worker id')
-            ->addOption('all', 'a', InputOption::VALUE_NONE, 'Should kill all workers')
-        ;
+            ->addOption('all', 'a', InputOption::VALUE_NONE, 'Should kill all workers');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -44,7 +43,7 @@ class StopWorkerCommand extends ContainerAwareCommand
                 return 1;
             }
 
-            $workers = array($worker);
+            $workers = [$worker];
         }
 
         foreach ($workers as $worker) {

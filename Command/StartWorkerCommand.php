@@ -3,11 +3,11 @@
 namespace Instasent\ResqueBundle\Command;
 
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
-use Symfony\Component\Process\Process;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Process\Process;
 
 class StartWorkerCommand extends ContainerAwareCommand
 {
@@ -20,13 +20,12 @@ class StartWorkerCommand extends ContainerAwareCommand
             ->addOption('count', 'c', InputOption::VALUE_REQUIRED, 'How many workers to fork', 1)
             ->addOption('interval', 'i', InputOption::VALUE_REQUIRED, 'How often to check for new jobs across the queues', 5)
             ->addOption('foreground', 'f', InputOption::VALUE_NONE, 'Should the worker run in foreground')
-            ->addOption('memory-limit', 'm', InputOption::VALUE_REQUIRED, 'Force cli memory_limit (expressed in Mbytes)')
-        ;
+            ->addOption('memory-limit', 'm', InputOption::VALUE_REQUIRED, 'Force cli memory_limit (expressed in Mbytes)');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $env = array();
+        $env = [];
 
         // here to work around issues with pcntl and cli_set_process_title in PHP > 5.5
         if (version_compare(PHP_VERSION, '5.5.0') >= 0) {
@@ -43,11 +42,11 @@ class StartWorkerCommand extends ContainerAwareCommand
 
         //Add compatibility with Symfony 2/3
         if (file_exists($this->getContainer()->getParameter('kernel.root_dir').'/bootstrap.php.cache')) {
-            $env['APP_INCLUDE'] = $this->getContainer()->getParameter('kernel.root_dir') . '/bootstrap.php.cache';
+            $env['APP_INCLUDE'] = $this->getContainer()->getParameter('kernel.root_dir').'/bootstrap.php.cache';
         } else {
-            $env['APP_INCLUDE'] = $this->getContainer()->getParameter('kernel.root_dir') . '/../var/bootstrap.php.cache';
+            $env['APP_INCLUDE'] = $this->getContainer()->getParameter('kernel.root_dir').'/../var/bootstrap.php.cache';
         }
-        
+
         $env['COUNT'] = $input->getOption('count');
         $env['INTERVAL'] = $input->getOption('interval');
         $env['QUEUE'] = $input->getArgument('queues');
@@ -92,17 +91,17 @@ class StartWorkerCommand extends ContainerAwareCommand
             }
         }
 
-        $workerCommand = strtr('%php% %opt% %dir%/resque', array(
+        $workerCommand = strtr('%php% %opt% %dir%/resque', [
             '%php%' => $phpExecutable,
             '%opt%' => $opt,
             '%dir%' => __DIR__.'/../bin',
-        ));
+        ]);
 
         if (!$input->getOption('foreground')) {
-            $workerCommand = strtr('nohup %cmd% > %logs_dir%/resque.log 2>&1 & echo $!', array(
-                '%cmd%' => $workerCommand,
+            $workerCommand = strtr('nohup %cmd% > %logs_dir%/resque.log 2>&1 & echo $!', [
+                '%cmd%'      => $workerCommand,
                 '%logs_dir%' => $this->getContainer()->getParameter('kernel.logs_dir'),
-            ));
+            ]);
         }
 
         // In windows: When you pass an environment to CMD it replaces the old environment
