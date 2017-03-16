@@ -41,7 +41,7 @@ class Configuration implements ConfigurationInterface
                         ->ifArray()
                         ->then(function ($var) {
                             if (array_key_exists(0, $var)) {
-                                return array($var);
+                                return [$var];
                             }
 
                             return $var;
@@ -83,8 +83,7 @@ class Configuration implements ConfigurationInterface
                         ->end()
                     ->end()
                 ->end()
-            ->end()
-        ;
+            ->end();
 
         return $treeBuilder;
     }

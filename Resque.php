@@ -19,12 +19,12 @@ class Resque
     /**
      * @var array
      */
-    private $globalRetryStrategy = array();
+    private $globalRetryStrategy = [];
 
     /**
      * @var array
      */
-    private $jobRetryStrategy = array();
+    private $jobRetryStrategy = [];
 
     public function __construct(array $kernelOptions)
     {
@@ -38,11 +38,11 @@ class Resque
 
     public function setRedisConfiguration($host, $port, $database)
     {
-        $this->redisConfiguration = array(
-            'host' => $host,
-            'port' => $port,
+        $this->redisConfiguration = [
+            'host'     => $host,
+            'port'     => $port,
             'database' => $database,
-        );
+        ];
         $host = substr($host, 0, 1) == '/' ? $host : $host.':'.$port;
 
         \Resque::setBackend($host, $database);
@@ -76,8 +76,6 @@ class Resque
         if ($trackStatus) {
             return new \Resque_Job_Status($result);
         }
-
-        return;
     }
 
     public function enqueueOnce(Job $job, $trackStatus = false)
@@ -105,8 +103,6 @@ class Resque
         $this->attachRetryStrategy($job);
 
         \ResqueScheduler::enqueueAt($at, $job->queue, \get_class($job), $job->args);
-
-        return;
     }
 
     public function enqueueIn($in, Job $job)
@@ -118,8 +114,6 @@ class Resque
         $this->attachRetryStrategy($job);
 
         \ResqueScheduler::enqueueIn($in, $job->queue, \get_class($job), $job->args);
-
-        return;
     }
 
     public function removedDelayed(Job $job)
@@ -152,7 +146,7 @@ class Resque
     }
 
     /**
-     * Returns an array of queues with its current load
+     * Returns an array of queues with its current load.
      *
      * @return array
      */
@@ -172,10 +166,10 @@ class Resque
      * @param $parallelQueues
      *
      * @return array of queues with its loads
-    */
+     */
     public function getParallelQueueLoads($queueKey, $parallelQueues)
     {
-        for ($i=1; $i <= $parallelQueues; $i++) {
+        for ($i = 1; $i <= $parallelQueues; $i++) {
             $queues[$queueKey.'-'.$i] = \Resque::size($queueKey.'-'.$i);
         }
 
@@ -184,7 +178,7 @@ class Resque
 
     /**
      * @return string The queue name with less job load
-    */
+     */
     public function getLessLoadedParallelQueue($queueKey, $parallelQueues)
     {
         $queues = $this->getParallelQueueLoads($queueKey, $parallelQueues);
@@ -235,9 +229,9 @@ class Resque
         $timestamps = \Resque::redis()->zrange('delayed_queue_schedule', 0, -1);
 
         //TODO: find a more efficient way to do this
-        $out = array();
+        $out = [];
         foreach ($timestamps as $timestamp) {
-            $out[] = array($timestamp, \Resque::redis()->llen('delayed:'.$timestamp));
+            $out[] = [$timestamp, \Resque::redis()->llen('delayed:'.$timestamp)];
         }
 
         return $out;
@@ -250,7 +244,7 @@ class Resque
             return $timestamps[0];
         }
 
-        return array(null, 0);
+        return [null, 0];
     }
 
     public function getNumberOfDelayedJobs()
@@ -261,7 +255,7 @@ class Resque
     public function getJobsForTimestamp($timestamp)
     {
         $jobs = \Resque::redis()->lrange('delayed:'.$timestamp, 0, -1);
-        $out = array();
+        $out = [];
         foreach ($jobs as $job) {
             $out[] = json_decode($job, true);
         }
@@ -286,7 +280,7 @@ class Resque
     {
         $jobs = \Resque::redis()->lrange('failed', $start, $count);
 
-        $result = array();
+        $result = [];
 
         foreach ($jobs as $job) {
             $result[] = new FailedJob(json_decode($job, true));

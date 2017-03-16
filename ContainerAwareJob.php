@@ -2,9 +2,9 @@
 
 namespace Instasent\ResqueBundle;
 
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\HttpKernel\KernelInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 abstract class ContainerAwareJob extends Job
 {

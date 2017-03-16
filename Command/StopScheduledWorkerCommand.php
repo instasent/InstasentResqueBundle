@@ -16,8 +16,7 @@ class StopScheduledWorkerCommand extends ContainerAwareCommand
     {
         $this
             ->setName('instasent:resque:scheduledworker-stop')
-            ->setDescription('Stop a instasent resque scheduled worker')
-        ;
+            ->setDescription('Stop a instasent resque scheduled worker');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)

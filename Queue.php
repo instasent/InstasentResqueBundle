@@ -25,7 +25,7 @@ class Queue
     {
         $jobs = \Resque::redis()->lrange('queue:'.$this->name, $start, $stop);
 
-        $result = array();
+        $result = [];
         foreach ($jobs as $job) {
             $job = new \Resque_Job($this->name, \json_decode($job, true));
             $result[] = $job->getInstance();

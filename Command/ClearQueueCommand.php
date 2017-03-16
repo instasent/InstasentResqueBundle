@@ -14,8 +14,7 @@ class ClearQueueCommand extends ContainerAwareCommand
         $this
             ->setName('instasent:resque:clear-queue')
             ->setDescription('Clear a Instasent queue')
-            ->addArgument('queue', InputArgument::REQUIRED, 'Queue name')
-        ;
+            ->addArgument('queue', InputArgument::REQUIRED, 'Queue name');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)

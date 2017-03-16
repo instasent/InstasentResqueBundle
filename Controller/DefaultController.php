@@ -12,9 +12,9 @@ class DefaultController extends Controller
 
         return $this->render(
             'InstasentResqueBundle:Default:index.html.twig',
-            array(
+            [
                 'resque' => $this->getResque(),
-            )
+            ]
         );
     }
 
@@ -31,11 +31,11 @@ class DefaultController extends Controller
 
         return $this->render(
             'InstasentResqueBundle:Default:queue_show.html.twig',
-            array(
-                'queue' => $queue,
-                'jobs' => $jobs,
+            [
+                'queue'      => $queue,
+                'jobs'       => $jobs,
                 'showingAll' => $showingAll,
-            )
+            ]
         );
     }
 
@@ -51,10 +51,10 @@ class DefaultController extends Controller
 
         return $this->render(
             'InstasentResqueBundle:Default:failed_list.html.twig',
-            array(
-                'jobs' => $jobs,
+            [
+                'jobs'       => $jobs,
                 'showingAll' => $showingAll,
-            )
+            ]
         );
     }
 
@@ -62,15 +62,15 @@ class DefaultController extends Controller
     {
         return $this->render(
             'InstasentResqueBundle:Default:scheduled_list.html.twig',
-            array(
+            [
                 'timestamps' => $this->getResque()->getDelayedJobTimestamps(),
-            )
+            ]
         );
     }
 
     public function showTimestampAction($timestamp)
     {
-        $jobs = array();
+        $jobs = [];
 
         // we don't want to enable the twig debug extension for this...
         foreach ($this->getResque()->getJobsForTimestamp($timestamp) as $job) {
@@ -79,10 +79,10 @@ class DefaultController extends Controller
 
         return $this->render(
             'InstasentResqueBundle:Default:scheduled_timestamp.html.twig',
-            array(
+            [
                 'timestamp' => $timestamp,
-                'jobs' => $jobs,
-            )
+                'jobs'      => $jobs,
+            ]
         );
     }
 
@@ -111,6 +111,6 @@ class DefaultController extends Controller
             $showingAll = true;
         }
 
-        return array($start, $count, $showingAll);
+        return [$start, $count, $showingAll];
     }
 }
