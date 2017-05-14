@@ -3,6 +3,7 @@
 namespace Instasent\ResqueBundle\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\HttpFoundation\Request;
 
 class DefaultController extends Controller
 {
@@ -12,17 +13,18 @@ class DefaultController extends Controller
 
         return $this->render(
             'InstasentResqueBundle:Default:index.html.twig',
-            array(
+            [
                 'resque' => $this->getResque(),
-            )
+            ]
         );
     }
 
-    public function showQueueAction($queue)
+    public function showQueueAction(Request $request)
     {
-        list($start, $count, $showingAll) = $this->getShowParameters();
+        list($start, $count, $showingAll) = $this->getShowParameters($request);
 
-        $queue = $this->getResque()->getQueue($queue);
+        $queueName = $request->get('queue');
+        $queue = $this->getResque()->getQueue($queueName);
         $jobs = $queue->getJobs($start, $count);
 
         if (!$showingAll) {
@@ -31,17 +33,17 @@ class DefaultController extends Controller
 
         return $this->render(
             'InstasentResqueBundle:Default:queue_show.html.twig',
-            array(
-                'queue' => $queue,
-                'jobs' => $jobs,
+            [
+                'queue'      => $queue,
+                'jobs'       => $jobs,
                 'showingAll' => $showingAll,
-            )
+            ]
         );
     }
 
-    public function listFailedAction()
+    public function listFailedAction(Request $request)
     {
-        list($start, $count, $showingAll) = $this->getShowParameters();
+        list($start, $count, $showingAll) = $this->getShowParameters($request);
 
         $jobs = $this->getResque()->getFailedJobs($start, $count);
 
@@ -51,10 +53,10 @@ class DefaultController extends Controller
 
         return $this->render(
             'InstasentResqueBundle:Default:failed_list.html.twig',
-            array(
-                'jobs' => $jobs,
+            [
+                'jobs'       => $jobs,
                 'showingAll' => $showingAll,
-            )
+            ]
         );
     }
 
@@ -62,15 +64,15 @@ class DefaultController extends Controller
     {
         return $this->render(
             'InstasentResqueBundle:Default:scheduled_list.html.twig',
-            array(
+            [
                 'timestamps' => $this->getResque()->getDelayedJobTimestamps(),
-            )
+            ]
         );
     }
 
     public function showTimestampAction($timestamp)
     {
-        $jobs = array();
+        $jobs = [];
 
         // we don't want to enable the twig debug extension for this...
         foreach ($this->getResque()->getJobsForTimestamp($timestamp) as $job) {
@@ -79,10 +81,10 @@ class DefaultController extends Controller
 
         return $this->render(
             'InstasentResqueBundle:Default:scheduled_timestamp.html.twig',
-            array(
+            [
                 'timestamp' => $timestamp,
-                'jobs' => $jobs,
-            )
+                'jobs'      => $jobs,
+            ]
         );
     }
 
@@ -97,20 +99,22 @@ class DefaultController extends Controller
     /**
      * decide which parts of a job queue to show.
      *
+     * @param Request $request
+     *
      * @return array
      */
-    private function getShowParameters()
+    private function getShowParameters(Request $request)
     {
         $showingAll = false;
         $start = -100;
         $count = -1;
 
-        if ($this->getRequest()->query->has('all')) {
+        if ($request->query->has('all')) {
             $start = 0;
             $count = -1;
             $showingAll = true;
         }
 
-        return array($start, $count, $showingAll);
+        return [$start, $count, $showingAll];
     }
 }
