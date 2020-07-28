@@ -1,0 +1,189 @@
+#!/usr/bin/env php
+<?php
+
+// Find and initialize Composer
+$composerAutoloadFile = [
+    __DIR__ . '/../vendor/autoload.php',
+    __DIR__ . '/../../vendor/autoload.php',
+    __DIR__ . '/../../../autoload.php',
+    __DIR__ . '/../../../../autoload.php',
+    __DIR__ . '/../../../../../autoload.php',
+];
+foreach ($composerAutoloadFile as $file) {
+    if (\file_exists($file)) {
+        require $file;
+        break;
+    }
+}
+
+if (!\class_exists('Composer\Autoload\ClassLoader', false)) {
+    $errorMessage = <<<ERROR
+You need to set up the project dependencies using the following commands:
+curl -s http://getcomposer.org/installer | php
+php composer.phar install
+ERROR;
+    die($errorMessage);
+}
+
+$QUEUE = \getenv('QUEUE');
+if (empty($QUEUE)) {
+    die("Set QUEUE env var containing the list of queues to work.\n");
+}
+$queues = \explode(',', $QUEUE);
+
+$REDIS_BACKEND = \getenv('REDIS_BACKEND');
+if (!empty($REDIS_BACKEND)) {
+    $REDIS_BACKEND_DB = \getenv('REDIS_BACKEND_DB');
+
+    Resque::setBackend($REDIS_BACKEND, empty($REDIS_BACKEND_DB) ? 0 : $REDIS_BACKEND_DB);
+}
+
+$LOGGING  = \getenv('LOGGING');
+$VERBOSE  = \getenv('VERBOSE');
+$VVERBOSE = \getenv('VVERBOSE');
+$logLevel = !empty($LOGGING) || !empty($VERBOSE) || !empty($VVERBOSE);
+
+$APP_INCLUDE = \getenv('APP_INCLUDE');
+if ($APP_INCLUDE) {
+    if (!\file_exists($APP_INCLUDE)) {
+        die('APP_INCLUDE (' . $APP_INCLUDE . ") does not exist.\n");
+    }
+
+    require_once $APP_INCLUDE;
+}
+
+// See if the APP_INCLUDE contains a logger object,
+// If none exists, fallback to internal logger
+if (!isset($logger) || !\is_object($logger)) {
+    $logger = new Resque_Log($logLevel);
+}
+
+$BLOCKING = \getenv('BLOCKING') !== false;
+
+$interval = 5;
+$INTERVAL = \getenv('INTERVAL');
+if (!empty($INTERVAL)) {
+    $interval = $INTERVAL;
+}
+
+$kernel = null;
+
+$workerClass = 'Instasent\ResqueBundle\WorkerSingle';
+if (\getenv('APP_KERNEL')) {
+    $symfonyKernelFile = \getenv('APP_KERNEL');
+
+    $kernelClass = \basename($symfonyKernelFile, '.php');
+    if (\preg_match('/^namespace\s+([A-Za-z0-9\\\\_-]+)\s*;$/m', \file_get_contents($symfonyKernelFile), $matches)) {
+        $kernelClass = $matches[1] . '\\' . $kernelClass;
+    }
+
+    require $symfonyKernelFile;
+
+    if (!\class_exists($kernelClass, false)
+        || !\in_array('Symfony\Component\HttpKernel\KernelInterface', \class_implements($kernelClass))
+    ) {
+        die('APP_KERNEL (' . $symfonyKernelFile . ") does not contain a Symfony Kernel class.\n");
+    }
+
+    $SYMFONY_ENV = \getenv('SYMFONY_ENV');
+
+    /* @var Symfony\Component\HttpKernel\KernelInterface $kernel */
+    $kernel = new $kernelClass((string) $SYMFONY_ENV, false);
+    $kernel->boot();
+
+    if (\getenv('LOG_CHANNEL')) {
+        $logger = $kernel->getContainer()->get(\getenv('LOG_CHANNEL'));
+    }
+
+    if (\getenv('WORKER_CLASS')) {
+        $baseWorkerClass = $workerClass;
+        $workerClass = \ltrim(\getenv('WORKER_CLASS'), '\\');
+
+        if ($workerClass !== $baseWorkerClass
+            && (!\class_exists($workerClass) || !\is_subclass_of($workerClass, $baseWorkerClass))
+        ) {
+            $logger->log(
+                Psr\Log\LogLevel::ERROR,
+                'Worker {worker_class} is not of the right kind',
+                ['worker_class' => $workerClass]
+            );
+            die();
+        }
+    }
+}
+
+$PREFIX = \getenv('PREFIX');
+if (!empty($PREFIX)) {
+    $logger->log(Psr\Log\LogLevel::INFO, 'Prefix set to {prefix}', ['prefix' => $PREFIX]);
+    Resque_Redis::prefix($PREFIX);
+}
+
+// If set, re-attach failed jobs based on retry_strategy
+Resque_Event::listen('onFailure', function(Exception $exception, Resque_Job $job) use ($logger) {
+    $args = $job->getArguments();
+
+    if (empty($args['intasent_resque.retry_strategy'])) {
+        return;
+    }
+
+    if (!isset($args['intasent_resque.retry_attempt'])) {
+        $args['intasent_resque.retry_attempt'] = 0;
+    }
+
+    $backoff = $args['intasent_resque.retry_strategy'];
+    if (!isset($backoff[$args['intasent_resque.retry_attempt']])) {
+        return;
+    }
+
+    $delay = $backoff[$args['intasent_resque.retry_attempt']];
+    $args['intasent_resque.retry_attempt']++;
+
+    if ($delay == 0) {
+        Resque::enqueue($job->queue, $job->payload['class'], $args);
+        $logger->log(
+            Psr\Log\LogLevel::ERROR,
+            'Job failed. Auto re-queued, attempt number: {attempt}',
+            ['attempt' => $args['intasent_resque.retry_attempt'] - 1]
+        );
+    } else {
+        $at = \time() + $delay;
+        ResqueScheduler::enqueueAt($at, $job->queue, $job->payload['class'], $args);
+        $logger->log(
+            Psr\Log\LogLevel::ERROR,
+            'Job failed. Auto re-queued. Scheduled for: {timestamp}, attempt number: {attempt}',
+            [
+                'timestamp' => \date('Y-m-d H:i:s', $at),
+                'attempt'   => $args['intasent_resque.retry_attempt'] - 1,
+            ]
+        );
+    }
+});
+
+/* @var Instasent\ResqueBundle\WorkerSingle $worker */
+$worker = $kernel !== null
+    ? $kernel->getContainer()->get($workerClass)
+    : new $workerClass([]);
+$worker->setId($worker->__toString().\implode(',', $queues));
+$worker->setQueues($queues);
+$worker->setLogger($logger);
+
+$PIDFILE = \getenv('PIDFILE');
+if ($PIDFILE) {
+    if (\file_put_contents($PIDFILE, \getmypid()) === false) {
+        $logger->log(
+            Psr\Log\LogLevel::WARNING,
+            'Could not write PID information to {pidfile}',
+            ['pidfile' => $PIDFILE]
+        );
+    }
+}
+
+$logger->log(
+    Psr\Log\LogLevel::INFO,
+    'Starting worker {worker} ({worker_class})',
+    [
+        'worker' => $worker,
+        'worker_class' => $workerClass,
+    ]
+);
+$worker->work($interval, $BLOCKING);

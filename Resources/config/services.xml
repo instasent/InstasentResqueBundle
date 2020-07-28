@@ -1,0 +1,31 @@
+<?xml version="1.0" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <parameters>
+        <parameter key="instasent_resque.kernel.root_dir">%kernel.root_dir%</parameter>
+        <parameter key="instasent_resque.vendor_dir" />
+        <parameter key="instasent_resque.class" />
+        <parameter key="instasent_resque.prefix" />
+        <parameter key="instasent_resque.redis.host" />
+        <parameter key="instasent_resque.redis.port" />
+        <parameter key="instasent_resque.redis.database" />
+    </parameters>
+
+    <services>
+        <service id="instasent_resque.resque" class="%instasent_resque.resque.class%" lazy="true">
+            <argument type="collection">
+                <argument key="kernel.root_dir">%instasent_resque.worker.root_dir%</argument>
+                <argument key="kernel.debug">%kernel.debug%</argument>
+                <argument key="kernel.environment">%kernel.environment%</argument>
+            </argument>
+            <call method="setRedisConfiguration">
+                <argument>%instasent_resque.resque.redis.host%</argument>
+                <argument>%instasent_resque.resque.redis.port%</argument>
+                <argument>%instasent_resque.resque.redis.database%</argument>
+            </call>
+        </service>
+    </services>
+</container>
