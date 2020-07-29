@@ -23,6 +23,11 @@ class StartWorkerCommand extends ContainerAwareCommand
     const NAME = 'instasent:resque:worker-start';
 
     /**
+     * SymfonyStyle|null
+     */
+    protected $ioStyle;
+
+    /**
      * {@inheritdoc}
      */
     protected function configure()
@@ -95,6 +100,7 @@ class StartWorkerCommand extends ContainerAwareCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $ioStyle = new SymfonyStyle($input, $output);
+        $this->ioStyle = $ioStyle;
         $container = $this->getContainer();
 
         try {
@@ -111,7 +117,7 @@ class StartWorkerCommand extends ContainerAwareCommand
                 $environment = null;
             }
         } catch (\Exception $exception) {
-            $ioStyle->error($exception->getMessage());
+            $this->ioStyle->error($exception->getMessage());
 
             return 1;
         }
@@ -125,12 +131,12 @@ class StartWorkerCommand extends ContainerAwareCommand
         }
 
         if (!$input->getOption('hide-debug')) {
-            $ioStyle->note(\sprintf('Starting worker %s', $commandLine));
+            $this->ioStyle->debug(\sprintf('Starting worker %s', $commandLine));
         }
 
         if (!$input->getOption('foreground')) {
             if (!$input->getOption('hide-debug')) {
-                $ioStyle->text(\sprintf(
+                $this->ioStyle->debug(\sprintf(
                     'Starting worker %s:%s:%s',
                     \function_exists('gethostname') ? \gethostname() : \php_uname('n'),
                     \trim($process->getOutput()),
@@ -143,7 +149,7 @@ class StartWorkerCommand extends ContainerAwareCommand
             return 0;
         }
 
-        $this->registerSignalHandlers($ioStyle, $process);
+        $this->registerSignalHandlers($process);
 
         $process->run(function ($type, $buffer) use ($ioStyle) {
             $ioStyle->text($buffer);
@@ -155,25 +161,31 @@ class StartWorkerCommand extends ContainerAwareCommand
     /**
      * Prepare signaling.
      *
-     * @param SymfonyStyle $ioStyle
+     * @param SymfonyStyle $this->ioStyle
      * @param Process      $process
      */
-    final protected function registerSignalHandlers(SymfonyStyle $ioStyle, Process $process)
+    final protected function registerSignalHandlers(Process $process)
     {
+        $ioStyle = $this->ioStyle;
+
         $closeHandler = function ($signal) use ($ioStyle, $process) {
             $environment = $process->getEnv();
+            $pid = $process->getPid();
+
             $pidFile = $environment['PIDFILE'];
-            if (!\file_exists($pidFile)) {
-                $ioStyle->error(\sprintf('PID file %s does not exist', $pidFile));
+            if (!$pid || !\file_exists($pidFile)) {
+                $ioStyle->error(\sprintf('pid not provided by process and PID file %s does not exist', $pidFile));
 
                 return;
             }
 
             $process->signal($signal);
 
-            $pid = \file_get_contents($pidFile);
-            \posix_kill($pid, $signal);
+            if(!$process->getPid()) {
+                $pid = \file_get_contents($pidFile);
+            }
 
+            \posix_kill($pid, $signal);
             \unlink($pidFile);
         };
 
@@ -318,12 +330,10 @@ class StartWorkerCommand extends ContainerAwareCommand
         }
 
         $logger = $input->getOption('logging');
-        if ($logger) {
-            if (!$container->has($logger)) {
-                throw new \Exception(\sprintf('Logger %s cannot be found', $logger));
-            }
+        $environment['LOG_CHANNEL'] = $logger;
 
-            $environment['LOG_CHANNEL'] = $logger;
+        if ($logger && !$container->has($logger)) {
+            $this->ioStyle->info('Logger is not defined or channel is not present in container');
         }
 
         return $environment;
@@ -344,7 +354,6 @@ class StartWorkerCommand extends ContainerAwareCommand
         }
 
         $environment['WORKER_CLASS'] = $input->getOption('worker');
-
         $environment['QUEUE'] = $input->getArgument('queues');
 
         return $environment;
@@ -373,7 +382,6 @@ class StartWorkerCommand extends ContainerAwareCommand
         }
 
         $binaryName = $this->getBinaryName();
-
         $command = \sprintf(
             '%s %s %s',
             $php,
