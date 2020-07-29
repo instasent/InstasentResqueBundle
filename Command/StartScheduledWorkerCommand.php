@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Instasent\ResqueBundle\Command;
 
 use Symfony\Component\Console\Input\InputInterface;
@@ -9,6 +7,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
 
 class StartScheduledWorkerCommand extends StartWorkerCommand
@@ -52,6 +51,13 @@ class StartScheduledWorkerCommand extends StartWorkerCommand
                 'Should the worker run in foreground'
             )
             ->addOption(
+                'wait-exception',
+                'we',
+                InputOption::VALUE_OPTIONAL,
+                'Seconds to wait after an exception',
+                5
+            )
+            ->addOption(
                 'hide-debug',
                 null,
                 InputOption::VALUE_NONE,
@@ -72,8 +78,8 @@ class StartScheduledWorkerCommand extends StartWorkerCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $ioStyle = new SymfonyStyle($input, $output);
-
         $container = $this->getContainer();
+        $waitException = $input->getOption('wait-exception');
 
         try {
             $environment = $this->getEnvironment($container, $input);
@@ -132,6 +138,12 @@ class StartScheduledWorkerCommand extends StartWorkerCommand
                 ));
             }
 
+            if (!$process->isSuccessful()) {
+                $this->ioStyle->text("Procces has is not successful waiting 5 secs");
+                sleep($waitException);
+                throw new ProcessFailedException($process);
+            }
+
             return 0;
         }
 
@@ -140,6 +152,12 @@ class StartScheduledWorkerCommand extends StartWorkerCommand
         $process->run(function ($type, $buffer) use ($ioStyle) {
             $ioStyle->text($buffer);
         });
+
+        if (!$process->isSuccessful()) {
+            $this->ioStyle->text("Procces has is not successful waiting 5 secs");
+            sleep($waitException);
+            throw new ProcessFailedException($process);
+        }
 
         return 0;
     }
@@ -152,7 +170,7 @@ class StartScheduledWorkerCommand extends StartWorkerCommand
         $environment = $this->getRootEnvironment($container, $input);
         $environment = $this->getResqueEnvironment($environment, $container, $input);
 
-        $vendorDir = $container->getParameter('instasent_resque.resque.vendor_dir');
+        $vendorDir = $container->getParameter('instasent_resque.vendor_dir');
         $environment['RESQUE_PHP'] = $vendorDir.'/chrisboulton/php-resque/lib/Resque.php';
 
         return $environment;

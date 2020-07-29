@@ -38,14 +38,19 @@ class Resque
         \Resque_Redis::prefix($prefix);
     }
 
-    public function setRedisConfiguration($host, $port, $database)
+    public function setRedisConfiguration($host, $port, $database, $dsn)
     {
         $this->redisConfiguration = [
             'host' => $host,
             'port' => $port,
             'database' => $database,
+            'dsn' => $dsn,
         ];
         $host = \substr($host, 0, 1) === '/' ? $host : $host.':'.$port;
+
+        if ($dsn) {
+            $host = $dsn;
+        }
 
         \Resque::setBackend($host, $database);
     }

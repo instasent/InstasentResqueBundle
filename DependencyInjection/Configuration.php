@@ -19,8 +19,14 @@ class Configuration implements ConfigurationInterface
      */
     public function getConfigTreeBuilder()
     {
-        $treeBuilder = new TreeBuilder();
-        $rootNode = $treeBuilder->root('instasent_resque');
+        $treeBuilder = new TreeBuilder('instasent_resque');
+
+        // support sf3 & sf4
+        if (method_exists($treeBuilder, 'getRootNode')) {
+            $rootNode = $treeBuilder->getRootNode();
+        } else {
+            $rootNode = $treeBuilder->root('instasent_resque');
+        }
 
         $rootNode
             ->addDefaultsIfNotSet()
@@ -74,7 +80,7 @@ class Configuration implements ConfigurationInterface
                         ->end()
                         ->scalarNode('dsn')
                             ->defaultValue(null)
-                            ->info('Redis full dsn connection. Supports Options')
+                            ->info('The redis full dsn')
                         ->end()
                     ->end()
                 ->end()

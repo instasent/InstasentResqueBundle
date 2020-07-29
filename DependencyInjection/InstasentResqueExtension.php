@@ -27,11 +27,12 @@ class InstasentResqueExtension extends Extension
         $loader = new Loader\XmlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
         $loader->load('services.xml');
 
-        $container->setParameter('instasent_resque.resque.vendor_dir', $config['vendor_dir']);
-        $container->setParameter('instasent_resque.resque.class', $config['class']);
-        $container->setParameter('instasent_resque.resque.redis.host', $config['redis']['host']);
-        $container->setParameter('instasent_resque.resque.redis.port', $config['redis']['port']);
-        $container->setParameter('instasent_resque.resque.redis.database', $config['redis']['database']);
+        $container->setParameter('instasent_resque.vendor_dir', $config['vendor_dir']);
+        $container->setParameter('instasent_resque.class', $config['class']);
+        $container->setParameter('instasent_resque.redis.host', $config['redis']['host']);
+        $container->setParameter('instasent_resque.redis.port', $config['redis']['port']);
+        $container->setParameter('instasent_resque.redis.database', $config['redis']['database']);
+        $container->setParameter('instasent_resque.redis.dsn', $config['redis']['dsn']);
 
         if (!empty($config['prefix'])) {
             $container->setParameter('instasent_resque.prefix', $config['prefix']);

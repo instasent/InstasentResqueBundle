@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Instasent\ResqueBundle\Command;
 
 use Instasent\ResqueBundle\WorkerSingle;
@@ -18,12 +16,16 @@ class StartWorkerSingleCommand extends StartWorkerCommand
     const NAME = 'instasent:resque:worker-single-start';
 
     /**
+     * @var string
+     */
+    protected static $defaultName = 'instasent:resque:worker-single-start';
+
+    /**
      * {@inheritdoc}
      */
     protected function configure()
     {
         $this
-            ->setName(self::NAME)
             ->setDescription('Start a instasent resque worker single')
             ->addOption(
                 'logging',
@@ -69,6 +71,13 @@ class StartWorkerSingleCommand extends StartWorkerCommand
                 InputOption::VALUE_OPTIONAL,
                 'Force cli memory_limit (expressed in Mbytes)',
                 '0'
+            )
+            ->addOption(
+                'wait-exception',
+                'we',
+                InputOption::VALUE_OPTIONAL,
+                'Seconds to wait after an exception',
+                5
             )
             ->addArgument(
                 'queues',

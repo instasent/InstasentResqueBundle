@@ -1,8 +1,5 @@
 <?php
 
-declare(strict_types=1);
-declare(ticks=1);
-
 namespace Instasent\ResqueBundle\Command;
 
 use Instasent\ResqueBundle\WorkerBase;
@@ -13,7 +10,9 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
+use Symfony\Component\Console\Command\Command;
 
 class StartWorkerCommand extends ContainerAwareCommand
 {
@@ -21,6 +20,12 @@ class StartWorkerCommand extends ContainerAwareCommand
      * Command name.
      */
     const NAME = 'instasent:resque:worker-start';
+
+    /**
+     * @var string
+     */
+    protected static $defaultName = 'instasent:resque:worker-start';
+
 
     /**
      * SymfonyStyle|null
@@ -81,11 +86,24 @@ class StartWorkerCommand extends ContainerAwareCommand
                 'Do not show debug information'
             )
             ->addOption(
+                'verbose',
+                null,
+                InputOption::VALUE_NONE,
+                'Run worker in verbose mode for debug'
+            )
+            ->addOption(
                 'memory-limit',
                 'm',
                 InputOption::VALUE_OPTIONAL,
                 'Force cli memory_limit (expressed in Mbytes)',
                 '0'
+            )
+            ->addOption(
+                'wait-exception',
+                'we',
+                InputOption::VALUE_OPTIONAL,
+                'Seconds to wait after an exception',
+                5
             )
             ->addArgument(
                 'queues',
@@ -102,6 +120,7 @@ class StartWorkerCommand extends ContainerAwareCommand
         $ioStyle = new SymfonyStyle($input, $output);
         $this->ioStyle = $ioStyle;
         $container = $this->getContainer();
+        $waitException = $input->getOption('wait-exception');
 
         try {
             $environment = $this->getEnvironment($container, $input);
@@ -123,20 +142,15 @@ class StartWorkerCommand extends ContainerAwareCommand
         }
 
         $commandLine = $this->getCommand($container, $input);
-
         if (\method_exists(Process::class, 'fromShellCommandline')) {
             $process = Process::fromShellCommandline($commandLine, null, $environment, null, null);
         } else {
             $process = new Process($commandLine, null, $environment, null, null);
         }
 
-        if (!$input->getOption('hide-debug')) {
-            $this->ioStyle->debug(\sprintf('Starting worker %s', $commandLine));
-        }
-
         if (!$input->getOption('foreground')) {
             if (!$input->getOption('hide-debug')) {
-                $this->ioStyle->debug(\sprintf(
+                $this->ioStyle->text(\sprintf(
                     'Starting worker %s:%s:%s',
                     \function_exists('gethostname') ? \gethostname() : \php_uname('n'),
                     \trim($process->getOutput()),
@@ -145,17 +159,29 @@ class StartWorkerCommand extends ContainerAwareCommand
             }
 
             $process->run();
+            if (!$process->isSuccessful()) {
+                $this->ioStyle->text("Procces has is not successful waiting 5 secs");
+                sleep($waitException);
+                throw new ProcessFailedException($process);
+            }
 
-            return 0;
+            return Command::SUCCESS;
         }
 
+        $this->ioStyle->text(\sprintf('Starting foreground worker %s with pid: %s', $commandLine, getmypid()));
         $this->registerSignalHandlers($process);
 
         $process->run(function ($type, $buffer) use ($ioStyle) {
             $ioStyle->text($buffer);
         });
 
-        return 0;
+        if (!$process->isSuccessful()) {
+            $this->ioStyle->text("Procces has is not successful waiting 5 secs");
+            sleep($waitException);
+            throw new ProcessFailedException($process);
+        }
+
+        return Command::SUCCESS;
     }
 
     /**
@@ -312,14 +338,14 @@ class StartWorkerCommand extends ContainerAwareCommand
             $environment['PREFIX'] = $prefix;
         }
 
-        $redisHost = $container->getParameter('instasent_resque.resque.redis.host');
-        $redisPort = $container->getParameter('instasent_resque.resque.redis.port');
-        $redisDsn = $container->getParameter('instasent_resque.resque.redis.dsn');
+        $redisHost = $container->getParameter('instasent_resque.redis.host');
+        $redisPort = $container->getParameter('instasent_resque.redis.port');
+        $redisDsn = $container->getParameter('instasent_resque.redis.dsn');
 
         if (!empty($redisHost) && !empty($redisPort)) {
             $environment['REDIS_BACKEND'] = $redisHost.':'.$redisPort;
 
-            $redisDatabase = $container->getParameter('instasent_resque.resque.redis.database');
+            $redisDatabase = $container->getParameter('instasent_resque.redis.database');
             if (!empty($redisDatabase)) {
                 $environment['REDIS_BACKEND_DB'] = $redisDatabase;
             }
@@ -333,7 +359,7 @@ class StartWorkerCommand extends ContainerAwareCommand
         $environment['LOG_CHANNEL'] = $logger;
 
         if ($logger && !$container->has($logger)) {
-            $this->ioStyle->info('Logger is not defined or channel is not present in container');
+            $this->ioStyle->info('Logger is not defined or is not present in container');
         }
 
         return $environment;
