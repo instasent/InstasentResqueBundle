@@ -55,7 +55,7 @@ class StartScheduledWorkerCommand extends StartWorkerCommand
                 'we',
                 InputOption::VALUE_OPTIONAL,
                 'Seconds to wait after an exception',
-                5
+                10
             )
             ->addOption(
                 'hide-debug',

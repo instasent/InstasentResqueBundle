@@ -77,7 +77,7 @@ class StartWorkerSingleCommand extends StartWorkerCommand
                 'we',
                 InputOption::VALUE_OPTIONAL,
                 'Seconds to wait after an exception',
-                5
+                10
             )
             ->addArgument(
                 'queues',

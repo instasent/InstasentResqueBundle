@@ -103,7 +103,7 @@ class StartWorkerCommand extends ContainerAwareCommand
                 'we',
                 InputOption::VALUE_OPTIONAL,
                 'Seconds to wait after an exception',
-                5
+                10
             )
             ->addArgument(
                 'queues',
