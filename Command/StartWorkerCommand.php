@@ -116,8 +116,7 @@ class StartWorkerCommand extends ContainerAwareCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $ioStyle = new SymfonyStyle($input, $output);
-        $this->ioStyle = $ioStyle;
+        $this->ioStyle = new SymfonyStyle($input, $output);
         $container = $this->getContainer();
         $waitException = $input->getOption('wait-exception');
 
@@ -159,7 +158,7 @@ class StartWorkerCommand extends ContainerAwareCommand
 
             $process->run();
             if (!$process->isSuccessful()) {
-                $this->ioStyle->text("Process is not successful waiting 5 secs");
+                $this->ioStyle->text(\sprintf('Process is not successful waiting %d secs', $waitException));
                 sleep($waitException);
                 throw new ProcessFailedException($process);
             }
@@ -170,12 +169,13 @@ class StartWorkerCommand extends ContainerAwareCommand
         $this->ioStyle->text(\sprintf('Starting foreground worker %s with pid: %s', $commandLine, getmypid()));
         $this->registerSignalHandlers($process);
 
+        $ioStyle = $this->ioStyle;
         $process->run(function ($type, $buffer) use ($ioStyle) {
             $ioStyle->text($buffer);
         });
 
         if (!$process->isSuccessful()) {
-            $this->ioStyle->text("Process is not successful waiting 5 secs");
+            $this->ioStyle->text(\sprintf('Process is not successful waiting %d secs', $waitException));
             sleep($waitException);
             throw new ProcessFailedException($process);
         }
@@ -186,7 +186,6 @@ class StartWorkerCommand extends ContainerAwareCommand
     /**
      * Prepare signaling.
      *
-     * @param SymfonyStyle $this->ioStyle
      * @param Process      $process
      */
     final protected function registerSignalHandlers(Process $process)
@@ -199,7 +198,7 @@ class StartWorkerCommand extends ContainerAwareCommand
 
             $pidFile = $environment['PIDFILE'];
             if (!$pid || !\file_exists($pidFile)) {
-                $ioStyle->error(\sprintf('pid not provided by process and PID file %s does not exist', $pidFile));
+                $ioStyle->error(\sprintf('pid not provided by process or PID file %s does not exist', $pidFile));
 
                 return;
             }

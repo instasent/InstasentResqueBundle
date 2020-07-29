@@ -2,6 +2,7 @@
 
 namespace Instasent\ResqueBundle\Command;
 
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -82,8 +83,7 @@ class StartScheduledWorkerCommand extends StartWorkerCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $ioStyle = new SymfonyStyle($input, $output);
-        $this->ioStyle = $ioStyle;
+        $this->ioStyle = new SymfonyStyle($input, $output);
         $container = $this->getContainer();
         $waitException = $input->getOption('wait-exception');
 
@@ -101,7 +101,7 @@ class StartScheduledWorkerCommand extends StartWorkerCommand
                 $environment = null;
             }
         } catch (\Exception $exception) {
-            $ioStyle->error($exception->getMessage());
+            $this->ioStyle->error($exception->getMessage());
 
             return 1;
         }
@@ -115,13 +115,13 @@ class StartScheduledWorkerCommand extends StartWorkerCommand
         }
 
         if (!$input->getOption('hide-debug')) {
-            $ioStyle->note(\sprintf('Starting worker %s', $commandLine));
+            $this->ioStyle->note(\sprintf('Starting worker %s', $commandLine));
         }
 
         if (!$input->getOption('foreground')) {
             $pidFile = $container->get('kernel')->getCacheDir().'/instasent_resque_scheduledworker.pid';
             if (\file_exists($pidFile) && !$input->getOption('force')) {
-                $ioStyle->error('PID file exists - use --force to override');
+                $this->ioStyle->error('PID file exists - use --force to override');
 
                 return 1;
             }
@@ -136,7 +136,7 @@ class StartScheduledWorkerCommand extends StartWorkerCommand
             \file_put_contents($pidFile, $pid);
 
             if (!$input->getOption('hide-debug')) {
-                $ioStyle->text(\sprintf(
+                $this->ioStyle->text(\sprintf(
                     'Starting worker %s:%s:%s',
                     \function_exists('gethostname') ? \gethostname() : \php_uname('n'),
                     $pid,
@@ -145,27 +145,28 @@ class StartScheduledWorkerCommand extends StartWorkerCommand
             }
 
             if (!$process->isSuccessful()) {
-                $this->ioStyle->text("Process is not successful waiting 5 secs");
+                $this->ioStyle->text(\sprintf('Process is not successful waiting %d secs', $waitException));
                 sleep($waitException);
                 throw new ProcessFailedException($process);
             }
 
-            return 0;
+            return Command::SUCCESS;
         }
 
         $this->registerSignalHandlers($process);
 
+        $ioStyle = $this->ioStyle;
         $process->run(function ($type, $buffer) use ($ioStyle) {
             $ioStyle->text($buffer);
         });
 
         if (!$process->isSuccessful()) {
-            $this->ioStyle->text("Process is not successful waiting 5 secs");
+            $this->ioStyle->text(\sprintf('Process is not successful waiting %d secs', $waitException));
             sleep($waitException);
             throw new ProcessFailedException($process);
         }
 
-        return 0;
+        return Command::SUCCESS;
     }
 
     /**

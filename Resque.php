@@ -46,8 +46,8 @@ class Resque
             'database' => $database,
             'dsn' => $dsn,
         ];
-        $host = \substr($host, 0, 1) === '/' ? $host : $host.':'.$port;
 
+        $host = \strpos($host, '/') === 0 ? $host : $host.':'.$port;
         if ($dsn) {
             $host = $dsn;
         }

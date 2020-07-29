@@ -213,7 +213,7 @@ if ($count > 1) {
     if ($PIDFILE) {
         if (\file_put_contents($PIDFILE, \getmypid()) === false) {
             $logger->log(
-                Psr\Log\LogLevel::NOTICE,
+                Psr\Log\LogLevel::WARNING,
                 'Could not write PID information to {pidfile}',
                 ['pidfile' => $PIDFILE]
             );
