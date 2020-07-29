@@ -26,7 +26,6 @@ class StartWorkerCommand extends ContainerAwareCommand
      */
     protected static $defaultName = 'instasent:resque:worker-start';
 
-
     /**
      * SymfonyStyle|null
      */
@@ -160,7 +159,7 @@ class StartWorkerCommand extends ContainerAwareCommand
 
             $process->run();
             if (!$process->isSuccessful()) {
-                $this->ioStyle->text("Procces has is not successful waiting 5 secs");
+                $this->ioStyle->text("Process is not successful waiting 5 secs");
                 sleep($waitException);
                 throw new ProcessFailedException($process);
             }
@@ -176,7 +175,7 @@ class StartWorkerCommand extends ContainerAwareCommand
         });
 
         if (!$process->isSuccessful()) {
-            $this->ioStyle->text("Procces has is not successful waiting 5 secs");
+            $this->ioStyle->text("Process is not successful waiting 5 secs");
             sleep($waitException);
             throw new ProcessFailedException($process);
         }

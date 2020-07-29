@@ -13,6 +13,11 @@ use Symfony\Component\Process\Process;
 class StartScheduledWorkerCommand extends StartWorkerCommand
 {
     /**
+     * @var string
+     */
+    protected static $defaultName = 'instasent:resque:scheduledworker-start';
+
+    /**
      * Command name.
      */
     const NAME = 'instasent:resque:scheduledworker-start';
@@ -78,6 +83,7 @@ class StartScheduledWorkerCommand extends StartWorkerCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $ioStyle = new SymfonyStyle($input, $output);
+        $this->ioStyle = $ioStyle;
         $container = $this->getContainer();
         $waitException = $input->getOption('wait-exception');
 
@@ -139,7 +145,7 @@ class StartScheduledWorkerCommand extends StartWorkerCommand
             }
 
             if (!$process->isSuccessful()) {
-                $this->ioStyle->text("Procces has is not successful waiting 5 secs");
+                $this->ioStyle->text("Process is not successful waiting 5 secs");
                 sleep($waitException);
                 throw new ProcessFailedException($process);
             }
@@ -147,14 +153,14 @@ class StartScheduledWorkerCommand extends StartWorkerCommand
             return 0;
         }
 
-        $this->registerSignalHandlers($ioStyle, $process);
+        $this->registerSignalHandlers($process);
 
         $process->run(function ($type, $buffer) use ($ioStyle) {
             $ioStyle->text($buffer);
         });
 
         if (!$process->isSuccessful()) {
-            $this->ioStyle->text("Procces has is not successful waiting 5 secs");
+            $this->ioStyle->text("Process is not successful waiting 5 secs");
             sleep($waitException);
             throw new ProcessFailedException($process);
         }
