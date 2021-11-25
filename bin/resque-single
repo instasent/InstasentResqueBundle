@@ -122,28 +122,28 @@ if (!empty($PREFIX)) {
 Resque_Event::listen('onFailure', function(Exception $exception, Resque_Job $job) use ($logger) {
     $args = $job->getArguments();
 
-    if (empty($args['intasent_resque.retry_strategy'])) {
+    if (empty($args['instasent_resque.retry_strategy'])) {
         return;
     }
 
-    if (!isset($args['intasent_resque.retry_attempt'])) {
-        $args['intasent_resque.retry_attempt'] = 0;
+    if (!isset($args['instasent_resque.retry_attempt'])) {
+        $args['instasent_resque.retry_attempt'] = 0;
     }
 
-    $backoff = $args['intasent_resque.retry_strategy'];
-    if (!isset($backoff[$args['intasent_resque.retry_attempt']])) {
+    $backoff = $args['instasent_resque.retry_strategy'];
+    if (!isset($backoff[$args['instasent_resque.retry_attempt']])) {
         return;
     }
 
-    $delay = $backoff[$args['intasent_resque.retry_attempt']];
-    $args['intasent_resque.retry_attempt']++;
+    $delay = $backoff[$args['instasent_resque.retry_attempt']];
+    $args['instasent_resque.retry_attempt']++;
 
     if ($delay == 0) {
         Resque::enqueue($job->queue, $job->payload['class'], $args);
         $logger->log(
             Psr\Log\LogLevel::ERROR,
             'Job failed. Auto re-queued, attempt number: {attempt}',
-            ['attempt' => $args['intasent_resque.retry_attempt'] - 1]
+            ['attempt' => $args['instasent_resque.retry_attempt'] - 1]
         );
     } else {
         $at = \time() + $delay;
@@ -153,7 +153,7 @@ Resque_Event::listen('onFailure', function(Exception $exception, Resque_Job $job
             'Job failed. Auto re-queued. Scheduled for: {timestamp}, attempt number: {attempt}',
             [
                 'timestamp' => \date('Y-m-d H:i:s', $at),
-                'attempt'   => $args['intasent_resque.retry_attempt'] - 1,
+                'attempt'   => $args['instasent_resque.retry_attempt'] - 1,
             ]
         );
     }
