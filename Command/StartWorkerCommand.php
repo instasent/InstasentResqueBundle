@@ -357,7 +357,7 @@ class StartWorkerCommand extends ContainerAwareCommand
         $environment['LOG_CHANNEL'] = $logger;
 
         if ($logger && !$container->has($logger)) {
-            $this->ioStyle->info('Logger is not defined or is not present in container');
+            $this->ioStyle->text('Logger is not defined or is not present in container');
         }
 
         return $environment;
