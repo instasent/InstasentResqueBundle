@@ -304,10 +304,7 @@ class Resque
     {
         $class = get_class($job);
 
-        if (isset($this->jobRetryStrategy[$class])) {
-            if (count($this->jobRetryStrategy[$class])) {
-                $job->args['instasent_resque.retry_strategy'] = $this->jobRetryStrategy[$class];
-            }
+        if (isset($this->jobRetryStrategy[$class]) && count($this->jobRetryStrategy[$class])) {
             $job->args['instasent_resque.retry_strategy'] = $this->jobRetryStrategy[$class];
         } elseif (count($this->globalRetryStrategy)) {
             $job->args['instasent_resque.retry_strategy'] = $this->globalRetryStrategy;
