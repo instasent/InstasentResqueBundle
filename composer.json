@@ -31,8 +31,8 @@
         "ext-posix": "*",
         "chrisboulton/php-resque": "dev-master",
         "chrisboulton/php-resque-scheduler": "dev-master",
-        "symfony/framework-bundle": ">=3.4",
-        "symfony/process": ">=3.4"
+        "symfony/framework-bundle": "^4.4|^5.0",
+        "symfony/process": "^4.4|^5.0"
     },
     "require-dev": {
         "friendsofphp/php-cs-fixer": "^2.0",

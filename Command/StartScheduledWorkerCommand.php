@@ -2,7 +2,6 @@
 
 namespace Instasent\ResqueBundle\Command;
 
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -150,7 +149,7 @@ class StartScheduledWorkerCommand extends StartWorkerCommand
                 throw new ProcessFailedException($process);
             }
 
-            return Command::SUCCESS;
+            return 0;
         }
 
         $this->registerSignalHandlers($process);
@@ -166,7 +165,7 @@ class StartScheduledWorkerCommand extends StartWorkerCommand
             throw new ProcessFailedException($process);
         }
 
-        return Command::SUCCESS;
+        return 0;
     }
 
     /**

@@ -12,7 +12,6 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
-use Symfony\Component\Console\Command\Command;
 
 class StartWorkerCommand extends ContainerAwareCommand
 {
@@ -163,7 +162,7 @@ class StartWorkerCommand extends ContainerAwareCommand
                 throw new ProcessFailedException($process);
             }
 
-            return Command::SUCCESS;
+            return 0;
         }
 
         $this->ioStyle->text(\sprintf('Starting foreground worker %s with pid: %s', $commandLine, getmypid()));
@@ -180,7 +179,7 @@ class StartWorkerCommand extends ContainerAwareCommand
             throw new ProcessFailedException($process);
         }
 
-        return Command::SUCCESS;
+        return 0;
     }
 
     /**
