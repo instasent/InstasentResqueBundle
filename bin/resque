@@ -149,14 +149,14 @@ Resque_Event::listen('onFailure', function(Exception $exception, Resque_Job $job
     $delay = $backoff[$args['instasent_resque.retry_attempt']];
     $args['instasent_resque.retry_attempt']++;
 
-    if ($delay == 0) {
+    if ($delay === 0) {
         Resque::enqueue($job->queue, $job->payload['class'], $args);
         $logger->log(
             Psr\Log\LogLevel::ERROR,
             'Job failed. Auto re-queued, attempt number: {attempt}',
             ['attempt' => $args['instasent_resque.retry_attempt'] - 1]
         );
-    } else {
+    } elseif (is_int($delay)) {
         $at = \time() + $delay;
         ResqueScheduler::enqueueAt($at, $job->queue, $job->payload['class'], $args);
         $logger->log(

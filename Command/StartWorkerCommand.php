@@ -204,7 +204,7 @@ class StartWorkerCommand extends ContainerAwareCommand
 
             $process->signal($signal);
 
-            if(!$process->getPid()) {
+            if (!$process->getPid()) {
                 $pid = \file_get_contents($pidFile);
             }
 

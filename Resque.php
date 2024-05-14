@@ -313,8 +313,10 @@ class Resque
     {
         $class = \get_class($job);
 
-        if (isset($this->jobRetryStrategy[$class]) && \count($this->jobRetryStrategy[$class])) {
-            $job->setArgument('instasent_resque.retry_strategy', $this->jobRetryStrategy[$class]);
+        if (array_key_exists($class, $this->jobRetryStrategy)) {
+            if (is_array($this->jobRetryStrategy[$class]) && \count($this->jobRetryStrategy[$class])) {
+                $job->setArgument('instasent_resque.retry_strategy', $this->jobRetryStrategy[$class]);
+            }
         } elseif (\count($this->globalRetryStrategy)) {
             $job->setArgument('instasent_resque.retry_strategy', $this->globalRetryStrategy);
         }

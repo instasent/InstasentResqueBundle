@@ -44,8 +44,8 @@
         }
     },
     "scripts": {
-        "lint-php": "php -l src && php -l bin",
-        "lint-phpcs": "phpcs --standard=PSR2 src bin",
+        "lint-php": "php -l .",
+        "lint-phpcs": "phpcs --standard=PSR2 --ignore=Resources/,vendor/ .",
         "lint-phpcs-fixer": "php-cs-fixer fix --config=.php_cs --dry-run --verbose",
         "fix-phpcs": "php-cs-fixer fix --config=.php_cs --verbose"
     }

@@ -407,20 +407,20 @@ With default strategy for all but specific jobs:
 instasent_resque:
     auto_retry:
       default:        [0, 10, 60]
-        Some\Job:       [0, 10, 120, 240]
-        Some\Other\Job: [10, 30, 120, 600]
+      Some\Job:       [0, 10, 120, 240]
+      Some\Other\Job: [10, 30, 120, 600]
 ```
 
 The `default` strategy (if provided) will be applied to all jobs that does not have a specific strategy attached. If not provided these jobs will not have auto retry.
 
-You can disable `auto_retry` for selected jobs by using an empty array:
+You can disable `auto_retry` for selected jobs by using an empty array or null:
 
 ```yml
 instasent_resque:
     auto_retry:
       default:        [0, 10, 60]
-        Some\Job:       []
-        Some\Other\Job: [10, 30, 120, 600]
+      Some\Job:       []
+      Some\Other\Job: [10, 30, 120, 600]
 ```
 
 Here `Some\Job` will not have any `auto_retry` attached.
