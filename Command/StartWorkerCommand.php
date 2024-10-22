@@ -84,12 +84,6 @@ class StartWorkerCommand extends ContainerAwareCommand
                 'Do not show debug information'
             )
             ->addOption(
-                'verbose',
-                null,
-                InputOption::VALUE_NONE,
-                'Run worker in verbose mode for debug'
-            )
-            ->addOption(
                 'memory-limit',
                 'm',
                 InputOption::VALUE_OPTIONAL,
