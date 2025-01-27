@@ -32,6 +32,7 @@ class InstasentResqueExtension extends Extension
         $container->setParameter('instasent_resque.redis.host', $config['redis']['host']);
         $container->setParameter('instasent_resque.redis.port', $config['redis']['port']);
         $container->setParameter('instasent_resque.redis.database', $config['redis']['database']);
+        $container->setParameter('instasent_resque.redis.password', $config['redis']['password']);
         $container->setParameter('instasent_resque.redis.dsn', $config['redis']['dsn']);
 
         if (!empty($config['prefix'])) {

@@ -12,6 +12,7 @@
         <parameter key="instasent_resque.redis.host" />
         <parameter key="instasent_resque.redis.port" />
         <parameter key="instasent_resque.redis.database" />
+        <parameter key="instasent_resque.redis.password" />
         <parameter key="instasent_resque.redis.dsn" />
     </parameters>
 
@@ -26,6 +27,7 @@
                 <argument>%instasent_resque.redis.host%</argument>
                 <argument>%instasent_resque.redis.port%</argument>
                 <argument>%instasent_resque.redis.database%</argument>
+                <argument>%instasent_resque.redis.password%</argument>
                 <argument>%instasent_resque.redis.dsn%</argument>
             </call>
         </service>

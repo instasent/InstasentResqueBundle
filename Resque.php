@@ -38,12 +38,13 @@ class Resque
         \Resque_Redis::prefix($prefix);
     }
 
-    public function setRedisConfiguration($host, $port, $database, $dsn)
+    public function setRedisConfiguration($host, $port, $database, $password, $dsn)
     {
         $this->redisConfiguration = [
             'host' => $host,
             'port' => $port,
             'database' => $database,
+            'password' => $password,
             'dsn' => $dsn,
         ];
 
@@ -52,7 +53,7 @@ class Resque
             $host = $dsn;
         }
 
-        \Resque::setBackend($host, $database);
+        \Resque::setBackend($host, $database, $password);
     }
 
     public function setGlobalRetryStrategy($strategy)
