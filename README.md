@@ -2,7 +2,7 @@
 
 > This is a fork from https://github.com/michelsalib/InstasentResqueBundle in order to keep its maintenance.
 
-The Instasent resque bundle provides integration of [php-resque](https://github.com/chrisboulton/php-resque/) to Symfony. It is inspired from resque, a Redis-backed Ruby library for creating background jobs, placing them on multiple queues, and processing them later.
+The Instasent resque bundle provides integration of [php-resque](https://github.com/resque/php-resque/) to Symfony. It is inspired from resque, a Redis-backed Ruby library for creating background jobs, placing them on multiple queues, and processing them later.
 
 ## Features:
 
@@ -182,7 +182,7 @@ By default `VERBOSE` environment variable is set when calling php-resque
 - `--verbose` option sets `VVERBOSE`
 - `--quiet` disables both so no debug output is thrown
 
-See php-resque logging option : https://github.com/chrisboulton/php-resque#logging
+See php-resque logging option : https://github.com/resque/php-resque#logging
 
 ## Use monolog from your kernel
 
@@ -261,7 +261,7 @@ stopsignal=QUIT
 [program:myapp_phpresque_scheduledworker]
 command = /usr/bin/php /home/sites/myapp/prod/current/vendor/instasent/resque-bundle/bin/resque-scheduler
 user = myusername
-environment = APP_INCLUDE='/home/sites/myapp/prod/current/vendor/autoload.php',VERBOSE='1',RESQUE_PHP='/home/sites/myapp/prod/current/vendor/chrisboulton/php-resque/lib/Resque.php'
+environment = APP_INCLUDE='/home/sites/myapp/prod/current/vendor/autoload.php',VERBOSE='1',RESQUE_PHP='/home/sites/myapp/prod/current/vendor/resque/php-resque/lib/Resque.php'
 stopsignal=QUIT
 
 [program:myapp_phpresque_default_single_worker_logger]

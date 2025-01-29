@@ -177,7 +177,7 @@ class StartScheduledWorkerCommand extends StartWorkerCommand
         $environment = $this->getResqueEnvironment($environment, $container, $input);
 
         $vendorDir = $container->getParameter('instasent_resque.vendor_dir');
-        $environment['RESQUE_PHP'] = $vendorDir.'/chrisboulton/php-resque/lib/Resque.php';
+        $environment['RESQUE_PHP'] = $vendorDir.'/resque/php-resque/lib/Resque.php';
 
         return $environment;
     }
